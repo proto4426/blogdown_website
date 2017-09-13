@@ -1,28 +1,18 @@
 ---
-title: Photoswipe Gallery Sample
+title: Plot Gallery Sample
 subtitle: Making a Gallery
-date: 2017-03-20
-tags: ["example", "photoswipe"]
+tags: ["statistics", "ggplot2"]
 ---
 
-Beautiful Hugo adds a few custom shortcodes created by [Li-Wen Yip](https://www.liwen.id.au/heg/) and [Gert-Jan van den Berg](https://github.com/GjjvdBurg/HugoPhotoSwipe) for making galleries with [PhotoSwipe](http://photoswipe.com) . 
+The well-known `R` library [ggplot2](http://ggplot2.tidyverse.org/reference/) is very useful to 
 
 {{< gallery caption-effect="fade" >}}
-  {{< figure thumb="-thumb" link="/img/hexagon.jpg" >}}
-  {{< figure thumb="-thumb" link="/img/sphere.jpg" caption="Sphere" >}}
-  {{< figure thumb="-thumb" link="/img/triangle.jpg" caption="Triangle" alt="This is a long comment about a triangle" >}}
+  {{< figure thumb="-thumb" link="/img/gev_comp_v1.jpg" >}}
+  {{< figure thumb="-thumb" link="/img/gev3.jpg" caption="Generalized Extreme Value Distribution" >}}
+  {{< figure thumb="-thumb" link="/img/post_draws.jpg" caption="Posterior draws from GAM with splines" alt="Smoothing method" >}}
+ {{< figure thumb="-thumb" link="/img/violin_density.jpg" caption="Violin and density plots " >}}
 {{< /gallery >}}
 
-<!--more-->
-## Example
-The above gallery was created using the following shortcodes:
-```
-{{</* gallery caption-effect="fade" */>}}
-  {{</* figure thumb="-thumb" link="/img/hexagon.jpg" */>}}
-  {{</* figure thumb="-thumb" link="/img/sphere.jpg" caption="Sphere" */>}}
-  {{</* figure thumb="-thumb" link="/img/triangle.jpg" caption="Triangle" alt="This is a long comment about a triangle" */>}}
-{{</* /gallery */>}}
-```
 
 ## Usage
 For full details please see the [hugo-easy-gallery GitHub](https://github.com/liwenyip/hugo-easy-gallery/) page. Basic usages from above are:

@@ -1,17 +1,19 @@
 baseurl = "https://PissoortA.github.io"
 DefaultContentLanguage = "en"
 #DefaultContentLanguage = "ja"
-title = "Antoine Pissort"
+title = "Antoine Pissoort"
 theme = "beautifulhugo"
 metaDataFormat = "yaml"
 pygmentsUseClasses = true
 pygmentCodeFences = true
 #disqusShortname = "XXX"
 #googleAnalytics = "XXX"
+ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
+
 
 [Params]
-  subtitle = "Build a beautiful and simple website in minutes"
-  logo = "img/avatar-icon.png"
+  subtitle = "Personal Website : Statistics - Data Science"
+  logo = "img/kaggle_sun.png"
   favicon = "img/favicon.ico"
   dateFormat = "January 2, 2006"
   commit = false
@@ -30,11 +32,10 @@ pygmentCodeFences = true
 #  desc = "Hexagon"
 
 [Author]
-  name = "Some Person"
-  website = "yourwebsite.com"
-  email = "youremail@domain.com"
-  facebook = "username"
-  googleplus = "+username" # or xxxxxxxxxxxxxxxxxxxxx
+  name = "Antoine Pissoort"
+  #website = "yourwebsite.com"
+  email = "antoine.pissoort@gmail.com"
+
   github = "username"
   gitlab = "username"
   twitter = "username"
@@ -70,21 +71,15 @@ pygmentCodeFences = true
 
 [[menu.main]]
     parent = "samples"
-    name = "Big Image Sample"
+    name = "Plot Gallery Sample"
     url = "post/2017-03-07-bigimg-sample"
     weight = 1
 
-[[menu.main]]
-    parent = "samples"
-    name = "Math Sample"
-    url = "post/2017-03-05-math-sample"
-    weight = 2
-
-[[menu.main]]
-    parent = "samples"
-    name = "Code Sample"
-    url = "post/2016-03-08-code-sample"
-    weight = 3
+#[[menu.main]]
+ #   parent = "samples"
+  #  name = "Code Sample"
+   # url = "post/2016-03-08-code-sample"
+    #weight = 2
 
 [[menu.main]]
     name = "Tags"

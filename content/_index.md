@@ -1,2 +1,6 @@
-## Front Page Content
-`beautifulhugo` supports content on your front page. Edit `/content/_index.md` to change what appears here. Delete `/content/_index.md` if you don't want any content here.
+## Biography
+Graduated in `Statistics` with specialization in `Data Science` from the *Université Catholique de Louvain* (Belgium), I am now pursuing a PhD for 
+
+I love programming and get visual insights from data, especially with the `R` language and with global packages such as `tidyverse`or `shiny`.
+
+

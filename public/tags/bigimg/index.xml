@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Bigimg on Antoine Pissort</title>
+    <title>Bigimg on Antoine Pissoort</title>
     <link>/tags/bigimg/</link>
-    <description>Recent content in Bigimg on Antoine Pissort</description>
+    <description>Recent content in Bigimg on Antoine Pissoort</description>
     <generator>Hugo -- gohugo.io</generator>
-    <managingEditor>youremail@domain.com (Some Person)</managingEditor>
-    <webMaster>youremail@domain.com (Some Person)</webMaster>
+    <managingEditor>antoine.pissoort@gmail.com (Antoine Pissoort)</managingEditor>
+    <webMaster>antoine.pissoort@gmail.com (Antoine Pissoort)</webMaster>
     <lastBuildDate>Tue, 07 Mar 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/bigimg/index.xml" rel="self" type="application/rss+xml" />
@@ -16,7 +16,7 @@
       <title>Big Image Sample</title>
       <link>/post/2017-03-07-bigimg-sample/</link>
       <pubDate>Tue, 07 Mar 2017 00:00:00 +0000</pubDate>
-      <author>youremail@domain.com (Some Person)</author>
+      <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
       <guid>/post/2017-03-07-bigimg-sample/</guid>
       <description>&lt;p&gt;The image banners at the top of the page are refered to as &amp;ldquo;bigimg&amp;rdquo; in this theme. They are optional, and one more more can be specified. If more than one is specified, the images rotate every 10 seconds. In the front matter, bigimgs are specified using an array of hashes.&lt;/p&gt;
 

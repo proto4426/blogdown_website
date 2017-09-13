@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Photoswipe on Antoine Pissort</title>
+    <title>Photoswipe on Antoine Pissoort</title>
     <link>/tags/photoswipe/</link>
-    <description>Recent content in Photoswipe on Antoine Pissort</description>
+    <description>Recent content in Photoswipe on Antoine Pissoort</description>
     <generator>Hugo -- gohugo.io</generator>
-    <managingEditor>youremail@domain.com (Some Person)</managingEditor>
-    <webMaster>youremail@domain.com (Some Person)</webMaster>
-    <lastBuildDate>Mon, 20 Mar 2017 00:00:00 +0000</lastBuildDate>
+    <managingEditor>antoine.pissoort@gmail.com (Antoine Pissoort)</managingEditor>
+    <webMaster>antoine.pissoort@gmail.com (Antoine Pissoort)</webMaster>
     
 	<atom:link href="/tags/photoswipe/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Photoswipe Gallery Sample</title>
+      <title>Plot Gallery Sample</title>
       <link>/post/2017-03-20-photoswipe-gallery-sample/</link>
-      <pubDate>Mon, 20 Mar 2017 00:00:00 +0000</pubDate>
-      <author>youremail@domain.com (Some Person)</author>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
       <guid>/post/2017-03-20-photoswipe-gallery-sample/</guid>
-      <description>&lt;p&gt;Beautiful Hugo adds a few custom shortcodes created by &lt;a href=&#34;https://www.liwen.id.au/heg/&#34;&gt;Li-Wen Yip&lt;/a&gt; and &lt;a href=&#34;https://github.com/GjjvdBurg/HugoPhotoSwipe&#34;&gt;Gert-Jan van den Berg&lt;/a&gt; for making galleries with &lt;a href=&#34;http://photoswipe.com&#34;&gt;PhotoSwipe&lt;/a&gt; .&lt;/p&gt;
+      <description>&lt;p&gt;The well-known &lt;code&gt;R&lt;/code&gt; library &lt;a href=&#34;http://ggplot2.tidyverse.org/reference/&#34;&gt;ggplot2&lt;/a&gt; is very usefull to&lt;/p&gt;
 
 
 
@@ -28,10 +27,10 @@
 &lt;link rel=&#34;stylesheet&#34; href=&#34;/css/hugo-easy-gallery.css&#34; /&gt;
 &lt;div class=&#34;box&#34; &gt;
   &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
-    &lt;div class=&#34;img&#34; style=&#34;background-image: url(&#39;/img/hexagon-thumb.jpg&#39;);&#34;&gt;
-      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;/img/hexagon-thumb.jpg&#34; /&gt;
+    &lt;div class=&#34;img&#34; style=&#34;background-image: url(&#39;figures/gev_comp_v1-thumb.jpg&#39;);&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;figures/gev_comp_v1-thumb.jpg&#34; /&gt;
     &lt;/div&gt;
-    &lt;a href=&#34;/img/hexagon.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+    &lt;a href=&#34;figures/gev_comp_v1.jpg&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
   &lt;/figure&gt;
 &lt;/div&gt;
   
