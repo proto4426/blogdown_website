@@ -19,11 +19,15 @@
   </url>
   
   <url>
-    <loc>/page/about/</loc>
+    <loc>/post/summary_bayesian/</loc>
   </url>
   
   <url>
     <loc>/page/about/</loc>
+  </url>
+  
+  <url>
+    <loc>/page/about_old/</loc>
   </url>
   
   <url>
@@ -34,6 +38,11 @@
   <url>
     <loc>/tags/ggplot2/</loc>
     <lastmod>2017-03-07T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/gibbs-sampler/</loc>
     <priority>0</priority>
   </url>
   
@@ -55,6 +64,11 @@
   <url>
     <loc>/tags/r/</loc>
     <lastmod>2017-03-07T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/categories/r/</loc>
     <priority>0</priority>
   </url>
   

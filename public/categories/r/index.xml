@@ -7,20 +7,17 @@
     <generator>Hugo -- gohugo.io</generator>
     <managingEditor>antoine.pissoort@gmail.com (Antoine Pissoort)</managingEditor>
     <webMaster>antoine.pissoort@gmail.com (Antoine Pissoort)</webMaster>
-    <lastBuildDate>Thu, 23 Jul 2015 21:13:14 -0500</lastBuildDate>
     
 	<atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Hello R Markdown</title>
-      <link>/post/2015-07-23-r-rmarkdown/</link>
-      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      <title>Bayesian methods in Extreme Value Theory</title>
+      <link>/post/summary_bayesian/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
-      <guid>/post/2015-07-23-r-rmarkdown/</guid>
-      <description>R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-You can embed an R code chunk like this:
-summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
+      <guid>/post/summary_bayesian/</guid>
+      <description>We found that evdbayes package typically uses the Metropolis-Hastings (MH) algorithm as MCMC sampler. We are aware that this probably not the most efficient algorithm available in the literature, but it is “easy” to implement and understand. Beware : We do not know if it is either the MH or the Gibbs sampler which is implemented when doing simulations with this package. (Hartmann and Ehlers 2016) state in their article that it is the MH but in the package’s source functions we see that this is rather the Gibbs sampler.</description>
     </item>
     
   </channel>
