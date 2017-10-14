@@ -3,93 +3,93 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://pissoorta.netlify.com/post/2017-03-07-bigimg-sample/</loc>
+    <loc>/post/2017-03-07-bigimg-sample/</loc>
     <lastmod>2017-03-07T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://pissoorta.netlify.com/</loc>
+    <loc>/</loc>
     <lastmod>2017-03-07T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://pissoorta.netlify.com/tags/bayesian/</loc>
-    <lastmod>2017-03-07T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://pissoorta.netlify.com/categories/bayesian/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://pissoorta.netlify.com/post/summary-bayesian/</loc>
-  </url>
-  
-  <url>
-    <loc>https://pissoorta.netlify.com/page/about/</loc>
-  </url>
-  
-  <url>
-    <loc>https://pissoorta.netlify.com/page/about_old/</loc>
-  </url>
-  
-  <url>
-    <loc>https://pissoorta.netlify.com/categories/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://pissoorta.netlify.com/tags/ggplot2/</loc>
+    <loc>/tags/bayesian/</loc>
     <lastmod>2017-03-07T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://pissoorta.netlify.com/tags/gibbs-sampler/</loc>
+    <loc>/categories/bayesian/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://pissoorta.netlify.com/page/</loc>
+    <loc>/post/summary-bayesian/</loc>
+  </url>
+  
+  <url>
+    <loc>/page/about/</loc>
+  </url>
+  
+  <url>
+    <loc>/page/about_old/</loc>
+  </url>
+  
+  <url>
+    <loc>/categories/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://pissoorta.netlify.com/post/2017-03-20-photoswipe-gallery-sample/</loc>
-  </url>
-  
-  <url>
-    <loc>https://pissoorta.netlify.com/post/</loc>
+    <loc>/tags/ggplot2/</loc>
     <lastmod>2017-03-07T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://pissoorta.netlify.com/tags/r/</loc>
+    <loc>/tags/gibbs-sampler/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/page/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/post/2017-03-20-photoswipe-gallery-sample/</loc>
+  </url>
+  
+  <url>
+    <loc>/post/</loc>
     <lastmod>2017-03-07T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://pissoorta.netlify.com/categories/r/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://pissoorta.netlify.com/tags/statistics/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://pissoorta.netlify.com/tags/</loc>
+    <loc>/tags/r/</loc>
     <lastmod>2017-03-07T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://pissoorta.netlify.com/categories/visualization/</loc>
+    <loc>/categories/r/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/statistics/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2017-03-07T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/categories/visualization/</loc>
     <priority>0</priority>
   </url>
   

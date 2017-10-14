@@ -2,58 +2,58 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on Antoine Pissoort</title>
-    <link>https://pissoorta.netlify.com/tags/</link>
+    <link>/tags/</link>
     <description>Recent content in Tags on Antoine Pissoort</description>
     <generator>Hugo -- gohugo.io</generator>
     <managingEditor>antoine.pissoort@gmail.com (Antoine Pissoort)</managingEditor>
     <webMaster>antoine.pissoort@gmail.com (Antoine Pissoort)</webMaster>
     <lastBuildDate>Tue, 07 Mar 2017 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://pissoorta.netlify.com/tags/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Bayesian</title>
-      <link>https://pissoorta.netlify.com/tags/bayesian/</link>
+      <link>/tags/bayesian/</link>
       <pubDate>Tue, 07 Mar 2017 00:00:00 +0000</pubDate>
       <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
-      <guid>https://pissoorta.netlify.com/tags/bayesian/</guid>
+      <guid>/tags/bayesian/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Ggplot2</title>
-      <link>https://pissoorta.netlify.com/tags/ggplot2/</link>
+      <link>/tags/ggplot2/</link>
       <pubDate>Tue, 07 Mar 2017 00:00:00 +0000</pubDate>
       <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
-      <guid>https://pissoorta.netlify.com/tags/ggplot2/</guid>
+      <guid>/tags/ggplot2/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Gibbs Sampler</title>
-      <link>https://pissoorta.netlify.com/tags/gibbs-sampler/</link>
+      <link>/tags/gibbs-sampler/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
-      <guid>https://pissoorta.netlify.com/tags/gibbs-sampler/</guid>
+      <guid>/tags/gibbs-sampler/</guid>
       <description></description>
     </item>
     
     <item>
       <title>R</title>
-      <link>https://pissoorta.netlify.com/tags/r/</link>
+      <link>/tags/r/</link>
       <pubDate>Tue, 07 Mar 2017 00:00:00 +0000</pubDate>
       <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
-      <guid>https://pissoorta.netlify.com/tags/r/</guid>
+      <guid>/tags/r/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Statistics</title>
-      <link>https://pissoorta.netlify.com/tags/statistics/</link>
+      <link>/tags/statistics/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
-      <guid>https://pissoorta.netlify.com/tags/statistics/</guid>
+      <guid>/tags/statistics/</guid>
       <description></description>
     </item>
     

@@ -47,7 +47,7 @@ varmat &lt;- ev$vectors %*% diag(sqrt(ev$values)) %*% t(ev$vectors)
 set.seed(100)
 iter &lt;- 
 mh.mcmc1 &lt;- MH_mcmc.own(start1, varmat %*% c(.36,.46,.57))</code></pre>
-<pre><code>## [1] &quot;time is  0.2  sec&quot;</code></pre>
+<pre><code>## [1] &quot;time is  0.199  sec&quot;</code></pre>
 <pre class="r"><code>cat(paste(&quot;acceptance rate is   &quot;, round(mh.mcmc1$mean.acc_rates,5 )))</code></pre>
 <pre><code>## acceptance rate is    0.27748</code></pre>
 <pre class="r"><code>colnames(mh.mcmc1$out.chain) &lt;- c(&quot;mu&quot;, &quot;logsig&quot;, &quot;xi&quot;, &quot;iter&quot;)
@@ -62,7 +62,7 @@ chains.plotOwn(mh.mcmc1$out.chain)</code></pre>
 <pre class="r"><code>set.seed(100)
 iter &lt;- 2000
 gibb1 &lt;- gibbs_mcmc.own(list(start1), iter = iter) # Same starting point as MH </code></pre>
-<pre><code>## [1] &quot;time is  1.099  sec&quot;</code></pre>
+<pre><code>## [1] &quot;time is  1.089  sec&quot;</code></pre>
 <pre class="r"><code>cat(&quot;acceptance rates are &quot;)</code></pre>
 <pre><code>## acceptance rates are</code></pre>
 <pre class="r"><code>round(gibb1$mean_acc.rates[[1]], 5 )</code></pre>
@@ -198,10 +198,10 @@ knitr::kable(matrix(unlist(start), ncol = 4, byrow = T, dimnames = list(c(&quot;
 set.seed(100)
 gibbs.trend &lt;- gibbs.trend.own(start, propsd = c(.5, 1.9, .15, .12),
                                iter = 1000) # Number of iter is for each chain. </code></pre>
-<pre><code>## [1] &quot;time is  0.984  sec&quot;
-## [1] &quot;time is  1.99  sec&quot;
-## [1] &quot;time is  2.847  sec&quot;
-## [1] &quot;time is  3.683  sec&quot;</code></pre>
+<pre><code>## [1] &quot;time is  0.83  sec&quot;
+## [1] &quot;time is  1.824  sec&quot;
+## [1] &quot;time is  2.664  sec&quot;
+## [1] &quot;time is  3.481  sec&quot;</code></pre>
 <pre class="r"><code>acc_rates.param &lt;- colMeans(do.call(rbind, gibbs.trend$mean_acc.rates))
 cat(&quot;acceptance rates are :&quot;)</code></pre>
 <pre><code>## acceptance rates are :</code></pre>

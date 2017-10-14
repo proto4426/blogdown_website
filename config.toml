@@ -1,4 +1,4 @@
-baseurl = "https://pissoorta.netlify.com/"
+baseurl = "/"
 DefaultContentLanguage = "en"
 #DefaultContentLanguage = "ja"
 title = "Antoine Pissoort"
