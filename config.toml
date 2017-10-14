@@ -1,4 +1,4 @@
-baseurl = "https://PissoortA.github.io"
+#baseurl = "https://PissoortA.github.io/"
 DefaultContentLanguage = "en"
 #DefaultContentLanguage = "ja"
 title = "Antoine Pissoort"
