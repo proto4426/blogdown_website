@@ -2,30 +2,30 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Pages on Antoine Pissoort</title>
-    <link>/page/</link>
+    <link>https://pissoorta.netlify.com/page/</link>
     <description>Recent content in Pages on Antoine Pissoort</description>
     <generator>Hugo -- gohugo.io</generator>
     <managingEditor>antoine.pissoort@gmail.com (Antoine Pissoort)</managingEditor>
     <webMaster>antoine.pissoort@gmail.com (Antoine Pissoort)</webMaster>
     
-	<atom:link href="/page/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://pissoorta.netlify.com/page/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>CV</title>
-      <link>/page/about/</link>
+      <link>https://pissoorta.netlify.com/page/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
-      <guid>/page/about/</guid>
+      <guid>https://pissoorta.netlify.com/page/about/</guid>
       <description>-- -- download -- --  </description>
     </item>
     
     <item>
       <title>CV</title>
-      <link>/page/about_old/</link>
+      <link>https://pissoorta.netlify.com/page/about_old/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
-      <guid>/page/about_old/</guid>
+      <guid>https://pissoorta.netlify.com/page/about_old/</guid>
       <description></description>
     </item>
     

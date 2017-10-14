@@ -1,0 +1,837 @@
+---
+title: "Bayesian methods in Extreme Value Theory"
+author: "Antoine Pissoort"
+date: "March 13, 2017"
+slug: summary-bayesian
+categories:
+  - R
+  - Bayesian
+  - visualization
+tags:
+  - Gibbs Sampler
+  - R
+  - ggplot2
+  - Bayesian
+  - statistics
+bibliography: sum.bib
+---
+
+
+
+<p>We found that <em>evdbayes</em> package typically uses the <em>Metropolis-Hastings</em> (MH) algorithm as MCMC sampler. We are aware that this probably not the most efficient algorithm available in the literature, but it is “easy” to implement and understand. <strong>Beware</strong> : We do not know if it is either the MH or the Gibbs sampler which is implemented when doing simulations with this package. <span class="citation">(Hartmann and Ehlers 2016)</span> state in their article that it is the MH but in the package’s source functions we see that this is rather the Gibbs sampler. We found no information about it somewhere else provided in the package….</p>
+<p>However, we will try to (compare and to) rely on other ways than this sole package, e.g.</p>
+<p><strong>1.</strong> Implement our <em>own functions</em>. The idea is to better understand the “black-box” and the hidden Bayesian’s mechanism, which is difficult when using only package’s functions. Moreoever, it will allow us to implement other algorithm (MH or Gibbs), to have better flexibility, … We will be mainly based on the book <span class="citation">(Dey and Yan 2016, chap. 13)</span>.</p>
+<p><strong>2.</strong> <em>Hamiltonian Monte Carlo</em> based mainly on the same article <span class="citation">(Hartmann and Ehlers 2016)</span> (…). The objective is then to use the <em>Stan</em> language which makes use of this technique, and which is built with the compiled language c++. This is (really) more efficient and thus would be preferable.</p>
+<p><strong>3.</strong> <em>revdbayes</em> ? Using sample ratio of uniforms (…) Not yet studied</p>
+<p><strong>Functions that we will use for the Bayesian setting</strong> :</p>
+<p>Look at the <code>PissoortThesis</code> package</p>
+<pre class="r"><code>library(PissoortThesis)</code></pre>
+<p>Notice that we will use <strong>non-informative</strong>, i.e. large variance <strong>priors</strong> (so far?) in the following.</p>
+<div id="first-implementations-stationary-gev-setting" class="section level1">
+<h1>First implementations : stationary GEV setting</h1>
+<div id="metropolis-hastlings" class="section level2">
+<h2>Metropolis-Hastlings</h2>
+<p>It is recommended to target <em>an acceptance rate of around 0.25 when all components of</em> <span class="math inline">\(\theta\)</span> <em>are updated simultaneously, and 0.40 when the components are updated one at a time.</em></p>
+<pre class="r"><code># Optimize Posterior Density Function to find starting values
+fn &lt;- function(par, data) -log_post0(par[1], par[2], par[3], data)
+param &lt;- c(mean(max_years$df$Max),log(sd(max_years$df$Max)), 0.1 )
+# opt &lt;- optim(param, fn, data = max_years$data, 
+#              method=&quot;BFGS&quot;, hessian = TRUE)
+opt &lt;- nlm(fn, param, data = max_years$data,
+           hessian=T, iterlim = 1e5) 
+start1 &lt;- opt$estimate
+Sig &lt;- solve(opt$hessian)
+ev &lt;- eigen( (2.4/sqrt(2))^2 * Sig)
+varmat &lt;- ev$vectors %*% diag(sqrt(ev$values)) %*% t(ev$vectors)
+
+set.seed(100)
+iter &lt;- 
+mh.mcmc1 &lt;- MH_mcmc.own(start1, varmat %*% c(.36,.46,.57))</code></pre>
+<pre><code>## [1] &quot;time is  0.2  sec&quot;</code></pre>
+<pre class="r"><code>cat(paste(&quot;acceptance rate is   &quot;, round(mh.mcmc1$mean.acc_rates,5 )))</code></pre>
+<pre><code>## acceptance rate is    0.27748</code></pre>
+<pre class="r"><code>colnames(mh.mcmc1$out.chain) &lt;- c(&quot;mu&quot;, &quot;logsig&quot;, &quot;xi&quot;, &quot;iter&quot;)
+chains.plotOwn(mh.mcmc1$out.chain)</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>We can visually verify that here, the posterior’s components (=parameters) are update simultaneously, i.e. jumps occur at the same time. (there are of course still not of the same “size”, this not veery visible here)</p>
+<p>However, it seems OK. Chains are good, it mix well, and acceptance rate is around 0.25,…. Parameter space could seem quite correctly visited.</p>
+<p><strong>Beware</strong>: add <em>Burn-in</em> should be more prudent. We will handle that in the following.</p>
+</div>
+<div id="gibbs-sampler" class="section level2">
+<h2>GIBBS sampler</h2>
+<pre class="r"><code>set.seed(100)
+iter &lt;- 2000
+gibb1 &lt;- gibbs_mcmc.own(list(start1), iter = iter) # Same starting point as MH </code></pre>
+<pre><code>## [1] &quot;time is  1.099  sec&quot;</code></pre>
+<pre class="r"><code>cat(&quot;acceptance rates are &quot;)</code></pre>
+<pre><code>## acceptance rates are</code></pre>
+<pre class="r"><code>round(gibb1$mean_acc.rates[[1]], 5 )</code></pre>
+<pre><code>## [1] 0.49060 0.56214 0.49674</code></pre>
+<pre class="r"><code># Do not forget Burn in period (We will make it inside function in  following)
+burn &lt;- iter/4  # Tune value
+
+gibb1$out.chain &lt;- gibb1$out.chain[-(1:burn),]
+
+
+chains.plotOwn(gibb1$out.chain)</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Here, we can first verify by eyes that the parameters are updated independently, that is one at time. It means that we generate different proposals for each parameter’s update, see above <code>gibbs_mcmc.own()</code>.</p>
+<p>Chains seem well stationnary. Acceptance rates are good too. This is, again, managed by a tuning of the proposal’s variance , made by trial-and-error (so far).</p>
+<p>For example, we could then see what <strong>rough estimate</strong> this would yield. We averaged the value over the chains, and compare it with those obtained by the same frequentist method (GEV)</p>
+<pre class="r"><code>param_gibbs &lt;- apply(gibb1$out.chain[,1:3], 2, mean) # Average over the (3) generated chains
+param_gibbs[&quot;logsig&quot;] &lt;- exp(param_gibbs[&quot;logsig&quot;] ) 
+
+frame &lt;- data.frame(Bayesian = param_gibbs, &#39;Frequentist(mle)&#39; = gev_fit$mle)
+row.names(frame) = c(&quot;$\\mu \\ $&quot;, &quot;$\\sigma \\quad$&quot;, &quot;$\\xi \\quad$&quot;)
+knitr::kable(frame, align = &#39;l&#39;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="left">Bayesian</th>
+<th align="left">Frequentist.mle.</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\mu \ \)</span></td>
+<td align="left">30.5610819</td>
+<td align="left">30.5867210</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\sigma \quad\)</span></td>
+<td align="left">2.1192761</td>
+<td align="left">2.0812200</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\xi \quad\)</span></td>
+<td align="left">-0.2430648</td>
+<td align="left">-0.2543682</td>
+</tr>
+</tbody>
+</table>
+<p>These estimates are very close (…)</p>
+<p>However, we will now consider our <strong>last model</strong>, by adding the significant linear trend, and then we will do all the (convergence) diagnostics needed before making any inference.</p>
+</div>
+</div>
+<div id="gibbs-sampler-with-nonstationarity-gev-linear-trend" class="section level1">
+<h1>Gibbs Sampler with <strong>Nonstationarity</strong> (GEV, linear trend)</h1>
+<p>From now, this will be our final model ! We will then “expand” a bit more.</p>
+<p><strong>1. We optimize log-posterior to retrieve (good) starting values from it</strong></p>
+<pre class="r"><code>data &lt;- max_years$data
+
+
+fn &lt;- function(par, data) -log_post1(par[1], par[2], par[3],
+                                        par[4], data)
+param &lt;- c(mean(max_years$df$Max), 0, log(sd(max_years$df$Max)), -0.1 )
+opt &lt;- optim(param, fn, data = max_years$data,
+             method = &quot;BFGS&quot;, hessian = T)
+cat(paste(&quot;Optimized starting values are : \n&quot;)) </code></pre>
+<pre><code>## Optimized starting values are :</code></pre>
+<pre class="r"><code>print &lt;- opt$par
+names(print) &lt;- c(&quot;mu&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)
+print</code></pre>
+<pre><code>##         mu        mu1     logsig         xi 
+## 30.6116390  2.9449779  0.6235831 -0.2092809</code></pre>
+<p>However, we will run several chains with this algorithms to improve convergence properties. Hence, we will have several starting values. These starting values will thus be put inside a <em>random generator of starting starting values</em> <span class="math inline">\(\Longrightarrow\downarrow\)</span></p>
+<p><strong>2. Choose several sets of Starting Values randomly :</strong></p>
+<p>This enables to run several different chains. This will be useful for further assesment of the convergence. These sets of starting values must be (over)dispersed to ensure the visit of the whole parameter space. <strong>Note</strong> that these have to be (re)tuned.</p>
+<pre class="r"><code>set.seed(100)
+start &lt;- list() ; k &lt;- 1 # Put them on a list
+while(k &lt; 5) { # starting value is randomly selected from a distribution
+  # that is overdispersed relative to the target
+  sv &lt;- as.numeric(rmvnorm(1, opt$par, 50 * solve(opt$hessian)))
+  svlp &lt;- log_post1(sv[1], sv[2], sv[3], sv[4], max_years$data)
+  #print(svlp)
+  if(is.finite(svlp)) {
+    start[[k]] &lt;- sv
+    names(start[[k]]) &lt;- c(&quot;mu&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)
+    k &lt;- k + 1
+  }
+}
+knitr::kable(matrix(unlist(start), ncol = 4, byrow = T, dimnames = list(c(&quot;start[[1]]&quot;, &quot;start[[2]]&quot;, &quot;start[[3]]&quot;, &quot;start[[4]]&quot;), c(&quot;$\\mu \\ $&quot;,&quot;$\\mu_{trend}$&quot;, &quot;$\\sigma$&quot;, &quot;$\\xi$&quot;))), align = &quot;c&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="center"><span class="math inline">\(\mu \ \)</span></th>
+<th align="center"><span class="math inline">\(\mu_{trend}\)</span></th>
+<th align="center"><span class="math inline">\(\sigma\)</span></th>
+<th align="center"><span class="math inline">\(\xi\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>start[[1]]</td>
+<td align="center">29.81244</td>
+<td align="center">3.578171</td>
+<td align="center">0.4490764</td>
+<td align="center">0.2257795</td>
+</tr>
+<tr class="even">
+<td>start[[2]]</td>
+<td align="center">30.64755</td>
+<td align="center">4.399750</td>
+<td align="center">0.2412920</td>
+<td align="center">0.1483930</td>
+</tr>
+<tr class="odd">
+<td>start[[3]]</td>
+<td align="center">29.49455</td>
+<td align="center">1.362091</td>
+<td align="center">0.6288642</td>
+<td align="center">-0.0903043</td>
+</tr>
+<tr class="even">
+<td>start[[4]]</td>
+<td align="center">30.32940</td>
+<td align="center">6.246485</td>
+<td align="center">0.6681958</td>
+<td align="center">-0.1835086</td>
+</tr>
+</tbody>
+</table>
+<p>Somewhat arbitrarily here, we go for <strong>4 different chains</strong> inside the function.</p>
+<p><strong>3. Run the final algorithm</strong></p>
+<p>The number of components in the <code>list()</code> “start” will automatically define the number of chains generated.</p>
+<pre class="r"><code># k chains with k different starting values
+set.seed(100)
+gibbs.trend &lt;- gibbs.trend.own(start, propsd = c(.5, 1.9, .15, .12),
+                               iter = 1000) # Number of iter is for each chain. </code></pre>
+<pre><code>## [1] &quot;time is  0.984  sec&quot;
+## [1] &quot;time is  1.99  sec&quot;
+## [1] &quot;time is  2.847  sec&quot;
+## [1] &quot;time is  3.683  sec&quot;</code></pre>
+<pre class="r"><code>acc_rates.param &lt;- colMeans(do.call(rbind, gibbs.trend$mean_acc.rates))
+cat(&quot;acceptance rates are :&quot;)</code></pre>
+<pre><code>## acceptance rates are :</code></pre>
+<pre class="r"><code>round(acc_rates.param, 5 )</code></pre>
+<pre><code>## [1] 0.39501 0.37648 0.44051 0.42488</code></pre>
+<pre class="r"><code>param.chain &lt;- gibbs.trend$out.chain[ ,1:4]</code></pre>
+<p>It runs relatively fast and the acceptance rates are all close to the target <span class="math inline">\(\approx 0.4\)</span>.</p>
+<p><strong>NOTE</strong> :</p>
+<ul>
+<li><strong>Proposal</strong>’s standard deviation default in the function is from a trial-and-error . This has to be (re)-tuned or adapted. We could find more automatic way to achieve this task.</li>
+<li><strong>Burn-in</strong>’s period is done into the function. This also can be tuned, whether by changing inside the function or by adding parameter in the function. Hence, we have ran 1000 iterations for each chains, and deleted half of each. We are thus again left with 2000 posterior samples. Note that it seems not necessary here to burn so much.</li>
+<li>Number of <strong>iterations</strong> can also be increased for more precision (…). Algorithm is relatively efficient.</li>
+<li></li>
+</ul>
+<p><strong>Plot of the so-obtained (complete) chains</strong></p>
+<pre class="r"><code>colnames(gibbs.trend$out.chain) &lt;- c(&quot;mu&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;, &quot;chain.nbr&quot;, &quot;iter&quot;)
+
+PissoortThesis::chains.plotOwn(gibbs.trend$out.chain )</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(gibbs.trend$out.chain) + geom_line(aes(x = iter, y = mu1)) + theme_piss(16,14) + labs(ylab = &quot;mu1&quot;, xlab = &quot;iter&quot; ) +  geom_hline(aes(yintercept = mean(gibbs.trend$out.chain$mu1), col = &quot;Posterior mean&quot;), linetype = &quot;dashed&quot;, size = 0.7)</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Mixing properties look relatively good for each of the parameter’s chains. Even for <span class="math inline">\(\mu_{trend}\)</span> (last one), as compared with our fail with <code>evdbayes package</code> ! (…)</p>
+<p>Now, we must go further with <strong>diagnostics</strong>.</p>
+<div id="diagnostics" class="section level2">
+<h2>Diagnostics</h2>
+<p>No diagnostics can assess convergence without uncertainty. Then, we must use several relevant tools to increase our confidence that convergence indeed happened, i.e. the equilibrium distribution has been reached.</p>
+<p>We will now rely on some packages to do this task, namely the well-known <code>coda</code> and the <code>bayesplot</code>. While the former is present since a moment, the latter is a new great visual tool relying on <code>ggplot</code>. It is mainly used for STAN outputs but it can be used here too, after some structural refinements… but we we did not achieve it so far.</p>
+<p>Traceplots of the chains with <strong>different starting values :</strong></p>
+<pre class="r"><code>colnames(gibbs.trend$out.chain)[1] &lt;- &quot;mu0&quot;
+chain.mix &lt;- cbind.data.frame(gibbs.trend$out.chain,
+                              iter.chain = rep(1:500, 4))
+g &lt;- mixchains.Own(chain.mix)
+g$gmu</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<pre class="r"><code>g$gmutrend</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
+<pre class="r"><code>g$glogsig</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-3.png" width="672" /></p>
+<pre class="r"><code>g$gxi</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-4.png" width="672" /></p>
+<p>Chain mixing seem quite well meaning that, whatever the starting value we use, which are actually very broad (see above), the behaviour of the generated chains are similar, in the sense that they are “reaching” in the same way the targetted stationary distribution.</p>
+<p><strong>Gelman-Rubin (Coda) Diagnostics</strong></p>
+<p>This diagnostic compares the behaviour of the several randomly initialized chains. It uses the <em>potential scal reduction statistic</em> (or <em>shrink factor</em>) <span class="math inline">\(\hat{R}\)</span> which measures now <strong>quantitatively</strong> the mixing of the chains. To do that, It measures the ratio of the average variance of samples within each chain to the variance of the pooled samples accross chains. If convergence occured, these should be the same and <span class="math inline">\(\hat{R}\)</span> will be 1. If not, this will be &gt;1.</p>
+<pre class="r"><code># Function to create mcmc.lists, useful for diagnostics on chains.
+&#39;mc.listDiag4&#39; &lt;- function (list, subset = c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)) {
+  mcmc.list(mcmc(list[[1]][, subset]),
+            mcmc(list[[2]][, subset]),
+            mcmc(list[[3]][, subset]),
+            mcmc(list[[4]][, subset])
+  )
+}</code></pre>
+<pre class="r"><code>## Gelman Coda Diagnostics : Base plot
+Rhat &lt;- gelman.diag(mc.listDiag4(gibbs.trend$out.ind), autoburnin=F)
+gelman.plot(mc.listDiag4(gibbs.trend$out.ind), autoburnin=F, auto.layout = T)
+
+##  In ggplot : Put all on the same y-scales
+gp.dat &lt;- gelman.plot(mc.listDiag4(gibbs.trend$out.ind), autoburnin=F)</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre class="r"><code>df = data.frame(bind_rows(as.data.frame(gp.dat[[&quot;shrink&quot;]][,,1]),
+                          as.data.frame(gp.dat[[&quot;shrink&quot;]][,,2])),
+                q = rep(dimnames(gp.dat[[&quot;shrink&quot;]])[[3]],
+                      each = nrow(gp.dat[[&quot;shrink&quot;]][,,1])),
+                last.iter = rep(gp.dat[[&quot;last.iter&quot;]], length(gp.dat)))
+library(reshape2)
+df_gg &lt;- melt(df, c(&quot;q&quot;,&quot;last.iter&quot;), value.name = &quot;shrink_factor&quot;)
+ggplot(df_gg,
+       aes(last.iter, shrink_factor, colour=q, linetype=q)) +
+  geom_hline(yintercept=1, colour=&quot;grey30&quot;, lwd=0.2) +
+  geom_line() +
+  geom_hline(yintercept = 1.1, colour = &quot;green4&quot;, linetype = &quot;dashed&quot;, size = 0.3) +
+  scale_y_continuous(breaks = c(1, 1.1, 1.5, 2, 3, 4 ),
+                     labels = c(1, 1.1, 1.5, 2, 3, 4 )) +
+  #ggtitle(&quot;Gelman Rubin dignostic : R-hat Statistic&quot;) +
+  facet_wrap(~variable,
+             labeller= labeller(.cols=function(x) gsub(&quot;V&quot;, &quot;Chain &quot;, x))) +
+  labs(x=&quot;Last Iteration in Chain&quot;, y=&quot;Shrink Factor&quot;,
+       colour=&quot;Quantile&quot;, linetype=&quot;Quantile&quot;,
+       subtitle = &quot;Gelman Rubin diagnostic : R-hat Statistic&quot;) +
+  scale_linetype_manual(values=c(2,1)) +
+  theme_piss() +
+  theme(strip.text = element_text(size=15),
+        plot.subtitle = element_text(size = 21, hjust = 0.5,
+                                     colour = &quot;#33666C&quot;, face = &quot;bold&quot;))</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-12-2.png" width="672" /></p>
+<p><strong>(look at y scales !!!!!)</strong></p>
+<p>We can see that it is quite close to 1, for every chains and for this (‘small’) number of iterations. The common rule is to be more prudent whenever <span class="math inline">\(\hat{R}&gt;1.1\)</span>. We remark that for <span class="math inline">\(\xi\)</span>, it seems to take more iterations before reaching stationary distribution.</p>
+<p>Note that we did not make any <em>thinning</em> so far, i.e. we did not take only one simulation every <em>thin</em> number of simulations. This process is widely used in the litterature and it is useful to reduce autocorrelations through the chains. However, it has also been proven that <em>thinning</em> the chains is actually less efficient than keeping all the generated samples for inference… The greater sample size effect of no thinning is generally stronger than the autocorrelation reduce factor of thinning It could be easily implemented.</p>
+<p><strong>Markov Chain’s autocorrelations :</strong></p>
+<p>This handles correlations <strong>within a single parameter’s chain</strong>. As for cross-correlations, we are looking here for small values for good properties.</p>
+<pre class="r"><code># Transform back the scale parameter
+param.chain[, &quot;sigma&quot;] &lt;- exp(param.chain[,&quot;logsig&quot;])
+
+## Markov Chain Correlations
+#autocorr(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)] ))
+#autocorr.diag(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)] ))
+autocorr.plot(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)]  ))</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>We can see that the autocorrelation behaviour for the chains seem quite fine.</p>
+<p>Again, we can remark that this is a bit more “slow” for <span class="math inline">\(\xi\)</span>, as we could expect.</p>
+<p><strong>Cross-correlations : </strong></p>
+<p>This one handles the correlations <strong>accross parameter</strong></p>
+<pre class="r"><code>crosscorr.plot(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)]  ),
+                title = &quot;Cross-correlation&quot;)
+title(&quot;Cross-correlation&quot;)</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<pre class="r"><code># In ggplot
+library(ggcorrplot)
+ggcorrplot(crosscorr(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)])),
+           hc.order = TRUE, type = &quot;lower&quot;, lab = TRUE, title = &quot;Cross-correlation&quot;,
+           ggtheme = PissoortThesis::theme_piss)</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-14-2.png" width="672" /></p>
+<pre class="r"><code># Compare it with Fisher information matrix (&#39;frequentist&#39;) by MLE with ismev
+cr.corr_lin &lt;- crosscorr(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;sigma&quot;, &quot;xi&quot;)]))
+dimnames(gev_nonstatio$cov) &lt;- dimnames(cr.corr_lin)
+# Transform it to correlation for comparison
+cov2cor(gev_nonstatio$cov)  ;    cr.corr_lin</code></pre>
+<pre><code>##               mu0         mu1       sigma         xi
+## mu0    1.00000000 -0.85891548  0.09903851 -0.2742867
+## mu1   -0.85891548  1.00000000 -0.03779568  0.0927534
+## sigma  0.09903851 -0.03779568  1.00000000 -0.5244750
+## xi    -0.27428668  0.09275340 -0.52447501  1.0000000</code></pre>
+<pre><code>##               mu0         mu1       sigma          xi
+## mu0    1.00000000 -0.02585806  0.11127655 -0.37753051
+## mu1   -0.02585806  1.00000000  0.01551463  0.06837416
+## sigma  0.11127655  0.01551463  1.00000000 -0.42852667
+## xi    -0.37753051  0.06837416 -0.42852667  1.00000000</code></pre>
+<p>As usual, we can remark that this is only the cross-correlations associated to <span class="math inline">\(\xi\)</span> which retain our attention.</p>
+<p>Could we check how this dependence can be intuitively explained in comparison with frequentist’s GEV ?</p>
+<p><strong>Geweke Diagnostics :</strong></p>
+<p>In short, this diagnostic, for each chains, tests for equality of the first <span class="math inline">\(10\%\)</span> of a single parameter’s chain with the mean computed from the 2nd half of the chain. Large buffer between these 2 blocks are taken to assume these are probably independent. We then do a classical (frequentist..) z-score test for equality of the 2 means based on the effective sample sizes which account for autocorrelations (…)</p>
+<pre class="r"><code>geweke &lt;- geweke.diag(mcmc(param.chain))
+2*dnorm(geweke$z) </code></pre>
+<pre><code>##        mu0        mu1     logsig         xi      sigma 
+## 0.61654784 0.67187309 0.28074459 0.08308954 0.29433880</code></pre>
+<p>Now, we partitionned the first half into 20 segments of iterations,</p>
+<pre class="r"><code>geweke.plot(mcmc(param.chain), nbins = 20) </code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-16-1.png" width="576" /></p>
+<p>Maybe a few <strong>more iterations</strong> could not be too much to convince ourself that convergence did really occur, especially again for <span class="math inline">\(\xi\)</span> for which the p-value is not far from the common level of <span class="math inline">\(5\%\)</span> .</p>
+<p><strong>Raftery and Lewis’s Diagnostics</strong></p>
+<p>This is a run length control diagnostic based on a criterion of accuracy of estimation of a quantile q. It also informs if the number of iterations is too small.</p>
+<p>For example, here for the quantile <span class="math inline">\(5\%\)</span> with a precision of 95% and an margin’s error of 2%, i.e. estimate <span class="math inline">\(q_{0.05}\pm 2\%\)</span> with <span class="math inline">\(95\%\)</span> accuracy.</p>
+<p>We did it for each chains, and here are the results, for the 4 chains separately :</p>
+<pre class="r"><code>## Raftery Coda Diagnostics
+# For each chain individually
+raf1 &lt;- raftery.diag(mc.listDiag4(gibbs.trend$out.ind)[[1]], q=0.05, r=0.02, s=0.95)
+raf2 &lt;- raftery.diag(mc.listDiag4(gibbs.trend$out.ind)[[2]], q=0.05, r=0.02, s=0.95)
+raf3 &lt;- raftery.diag(mc.listDiag4(gibbs.trend$out.ind)[[3]], q=0.05, r=0.02, s=0.95)
+raf4 &lt;- raftery.diag(mc.listDiag4(gibbs.trend$out.ind)[[4]], q=0.05, r=0.02, s=0.95)
+set.seed(12)
+raf &lt;- sample(list(raf1$resmatrix, raf2$resmatrix, raf3$resmatrix, raf4$resmatrix), 1)
+
+pander(as.data.frame(raf))</code></pre>
+<table style="width:54%;">
+<colgroup>
+<col width="18%" />
+<col width="6%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">M</th>
+<th align="center">N</th>
+<th align="center">Nmin</th>
+<th align="center">I</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>mu0</strong></td>
+<td align="center">15</td>
+<td align="center">1955</td>
+<td align="center">457</td>
+<td align="center">4.28</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>mu1</strong></td>
+<td align="center">16</td>
+<td align="center">2198</td>
+<td align="center">457</td>
+<td align="center">4.81</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>logsig</strong></td>
+<td align="center">14</td>
+<td align="center">1833</td>
+<td align="center">457</td>
+<td align="center">4.01</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>xi</strong></td>
+<td align="center">22</td>
+<td align="center">3019</td>
+<td align="center">457</td>
+<td align="center">6.61</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># For the complete chains
+raf_tot &lt;- raftery.diag(mcmc(gibbs.trend$out.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)]),
+                     q=0.05, r=0.02, s=0.95)
+pander(raf_tot$resmatrix)</code></pre>
+<table style="width:54%;">
+<colgroup>
+<col width="18%" />
+<col width="6%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">M</th>
+<th align="center">N</th>
+<th align="center">Nmin</th>
+<th align="center">I</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>mu0</strong></td>
+<td align="center">17</td>
+<td align="center">2189</td>
+<td align="center">457</td>
+<td align="center">4.79</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>mu1</strong></td>
+<td align="center">12</td>
+<td align="center">1607</td>
+<td align="center">457</td>
+<td align="center">3.52</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>logsig</strong></td>
+<td align="center">13</td>
+<td align="center">1672</td>
+<td align="center">457</td>
+<td align="center">3.66</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>xi</strong></td>
+<td align="center">19</td>
+<td align="center">2504</td>
+<td align="center">457</td>
+<td align="center">5.48</td>
+</tr>
+</tbody>
+</table>
+<p>These values are based on the (auto)correlation inside the generated samples and it informs about minimum values required for a chain with no correlation between consecutive samples.</p>
+<ol style="list-style-type: decimal">
+<li><strong>Burn-in</strong> number of deleted values is small, meaning that starting values are not very influent.</li>
+<li><strong>Total</strong> is the advised number of iterations, which is actually quite close to our “choice” (=2000)</li>
+<li><strong>Lower bound</strong> is the minimum sample size based on zero autocorrelation. Here it is relatively low, so it is a good point.</li>
+<li><strong>Dependence factor</strong> informs about the dependence into the chains, or the extent to which autocorrelation inflates the required sample size. It is common to say that values above 5for this criterion indicate a strong autocorrelation. Here we see that it is slightly the case, especially for… <span class="math inline">\(\xi\)</span>. <br></li>
+</ol>
+</div>
+<div id="final-results" class="section level2">
+<h2>Final Results</h2>
+<p><strong>Summary Table from the posterior :</strong></p>
+<pre class="r"><code>tab1 &lt;- as.data.frame(summary(mcmc(param.chain))$quantiles)
+#colnames(tab1) &lt;- c(&quot;$\\boldsymbol{q_{0.025}}$&quot;,&quot;$\\boldsymbol{q_{0.25}}$&quot;,&quot;Median&quot;,&quot;$\\boldsymbol{q_{0.75}}$&quot;,&quot;$\\boldsymbol{q_{0.975}}$&quot;)
+#rownames(tab1) &lt;- c(&quot;$\\mu \\ $&quot;,&quot;$\\mu_1 \\quad$&quot;, &quot;$\\sigma \\quad$&quot;, &quot;$\\xi \\quad$&quot;)
+pander(tab1,split.table = Inf)</code></pre>
+<table style="width:88%;">
+<colgroup>
+<col width="18%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2.5%</th>
+<th align="center">25%</th>
+<th align="center">50%</th>
+<th align="center">75%</th>
+<th align="center">97.5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>mu0</strong></td>
+<td align="center">30.23</td>
+<td align="center">30.46</td>
+<td align="center">30.6</td>
+<td align="center">30.76</td>
+<td align="center">30.93</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>mu1</strong></td>
+<td align="center">1.594</td>
+<td align="center">2.511</td>
+<td align="center">2.943</td>
+<td align="center">3.394</td>
+<td align="center">4.352</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>logsig</strong></td>
+<td align="center">0.501</td>
+<td align="center">0.5861</td>
+<td align="center">0.6317</td>
+<td align="center">0.6922</td>
+<td align="center">0.7893</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>xi</strong></td>
+<td align="center">-0.3014</td>
+<td align="center">-0.2391</td>
+<td align="center">-0.1977</td>
+<td align="center">-0.1554</td>
+<td align="center">-0.06224</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>sigma</strong></td>
+<td align="center">1.65</td>
+<td align="center">1.797</td>
+<td align="center">1.881</td>
+<td align="center">1.998</td>
+<td align="center">2.202</td>
+</tr>
+</tbody>
+</table>
+<p>At first sight, we can appreciate that results seem very similar to the frequentists ones. Let’s now compare them, by taking the smaple mean value of the posterior for the Bayesian estimate.</p>
+<p>We can also represent the <strong>posterior densities</strong> to have visual insight of the posterior’s probability mass. (can smooth it)</p>
+<pre class="r"><code>## Summary And Parameter Table
+param.chain$sigma &lt;- exp(param.chain$logsig)
+tab_quantiles &lt;- as.data.frame(summary(mcmc(param.chain))$quantiles)
+
+## HPD intervals
+library(HDInterval)
+hpd_mu0 &lt;- hdi(param.chain$mu0)
+hpd_mu1 &lt;- hdi(param.chain$mu1)
+hpd_logsigma &lt;- hdi(param.chain$logsig)
+hpd_xi &lt;- hdi(param.chain$xi)
+hpd_sigma &lt;- hdi(param.chain$sigma)
+hpd95 &lt;- data.frame(mu0 = c(hpd_mu0), mu1 = c(hpd_mu1),
+                    logsig = c(hpd_logsigma),
+                    xi = c(hpd_xi), sig = c(hpd_sigma))
+
+
+library(gridExtra)
+
+## Densities of the parameters with their quantile-based and  HPD 0.95 intervals
+color_scheme_set(&quot;brightblue&quot;)
+col.intervals &lt;- c(&quot;Quantile&quot; = &quot;red&quot;, &quot;HPD&quot; = &quot;green&quot;)
+
+&#39;legend.things&#39;  &lt;-
+  list(scale_color_manual(name = &quot;Intervals&quot;, values = col.intervals),
+    theme_piss(legend.position = c(0.92, 0.5)),
+    theme(legend.background = element_rect(colour = &quot;transparent&quot;,size = 0.5))
+   )
+
+g1 &lt;- mcmc_dens(param.chain, pars = c(&quot;mu0&quot;)) +
+  geom_vline(aes(xintercept = tab_quantiles[&#39;mu0&#39;, &quot;2.5%&quot;],
+             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = tab_quantiles[&#39;mu0&#39;, &quot;97.5%&quot;],
+             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = hpd_mu0[[1]],
+             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = hpd_mu0[[2]],
+             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
+  legend.things
+g2 &lt;- mcmc_dens(param.chain, pars = c(&quot;logsig&quot;)) +
+  geom_vline(aes(xintercept = tab_quantiles[&#39;logsig&#39;, &quot;2.5%&quot;],
+             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = tab_quantiles[&#39;logsig&#39;, &quot;97.5%&quot;],
+             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = hpd_logsigma[[1]],
+             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = hpd_logsigma[[2]],
+             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
+  legend.things
+g3 &lt;- mcmc_dens(param.chain, pars = c(&quot;xi&quot;))+
+  geom_vline(aes(xintercept = tab_quantiles[&#39;xi&#39;, &#39;2.5%&#39;],
+             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = tab_quantiles[&#39;xi&#39;, &quot;97.5%&quot;],
+             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = hpd_xi[[1]],
+             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = hpd_xi[[2]],
+             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;)+
+  legend.things
+g4 &lt;- mcmc_dens(param.chain, pars = c(&quot;mu1&quot;)) +
+  geom_vline(aes(xintercept = tab_quantiles[&#39;mu1&#39;, &#39;2.5%&#39;],
+             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = tab_quantiles[&#39;mu1&#39;, &quot;97.5%&quot;],
+             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = hpd_mu1[[1]],
+             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(aes(xintercept = hpd_mu1[[2]],
+             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
+  legend.things
+
+title &lt;- &quot;Posterior densities of the parameters and Bayesian intervals&quot;
+grid.arrange( g1, g4, g2, g3, nrow = 2,
+              top = grid::textGrob(title,
+                                   gp = grid::gpar(col = &quot;#33666C&quot;,
+                                                   fontsize = 20,
+                                                   font = 4), vjust = 0.4))</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-19-1.png" width="816" /></p>
+<p><strong>Comparisons with Frequentist’s results (GEV) :</strong></p>
+<pre class="r"><code>par_gibbs_trend &lt;- apply(gibbs.trend$out.chain[,c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)],
+                         2, mean) # Average over the (3) generated chains
+par_gibbs_trend[&quot;sigma&quot;] &lt;- exp(par_gibbs_trend[&quot;logsig&quot;] ) 
+
+frame &lt;- data.frame(Bayesian = par_gibbs_trend[c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;sigma&quot;, &quot;xi&quot;)], &#39;Frequentist(mle)&#39; = gev_nonstatio$mle)
+row.names(frame) = c(&quot;$\\mu \\ $&quot;,&quot;$\\underline{\\mu_1} \\quad$&quot;, &quot;$\\sigma \\quad$&quot;, &quot;$\\xi \\quad$&quot;)
+knitr::kable(frame, align = &#39;l&#39;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="left">Bayesian</th>
+<th align="left">Frequentist.mle.</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\mu \ \)</span></td>
+<td align="left">30.5961553</td>
+<td align="left">29.1261123</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\underline{\mu_1} \quad\)</span></td>
+<td align="left">2.9583769</td>
+<td align="left">0.0253972</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\sigma \quad\)</span></td>
+<td align="left">1.8953661</td>
+<td align="left">1.8655819</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\xi \quad\)</span></td>
+<td align="left">-0.1939517</td>
+<td align="left">-0.2092341</td>
+</tr>
+</tbody>
+</table>
+<p>Again, these look very similar. We must <strong>notice</strong> that is natural and this is rather comforting as we used <strong>non-informative priors</strong> so far. ( <span class="math inline">\(\rightarrow\)</span> <em>study behaviour if we introduce information through priors ?</em></p>
+<p><strong>why is the value of</strong> <span class="math inline">\(\mu_1\)</span> <strong>different with this obtained with frequentist ?</strong></p>
+<p><strong>Note that for</strong> <span class="math inline">\(\mathbf{\mu_{trend}}\)</span>, time has been rescaled to <span class="math inline">\(\mathbf^{scaled}\)</span>, to give :</p>
+<p><span class="math display">\[\mathbf{\mu}_{trend} = \mu + \mu_1 \cdot \mathbf{t}^{scaled} \qquad\text{where}\qquad t_{i}^{scaled} = \frac{t_i - mean(t) }{|\mathbf{t}|}, \]</span> or look inside <code>log_post1()</code>. <span class="math inline">\({|\mathbf{t}|}\)</span> denotes heee the length of <span class="math inline">\({\mathbf{t}}\)</span>. This scaling had to be done for good behaviour of the generated chains. Verifications have been made, and this is perhaps why it did not work with <code>evdbayes</code> (see below).</p>
+</div>
+<div id="posterior-predictive-distribution" class="section level2">
+<h2>Posterior Predictive Distribution</h2>
+<p>The posterior predictive distribution (PPD) is the distribution for future predicted data based on the data you have already seen. So the posterior predictive distribution is basically used to predict new data values.</p>
+<p><span class="math display">\[\begin{aligned}
+    \text{Pr}\{\tilde{X}&lt;x\ | \ \mathbf{x}\}= &amp;\int_{\Theta}\Pr\{\tilde{X}&lt;x \ | \ \theta \} \cdot \pi(\theta|\boldsymbol{x})\cdot d\theta \\ 
+    = &amp; \ \mathbb{E}_{\theta|\boldsymbol{x}}\big[\Pr(\tilde{X}&lt;x \ | \ \theta)\big].
+    \end{aligned}\]</span></p>
+<p>To obtain this, we will estimate it by generating samples from the posterior ditribution to form the PPD.</p>
+<pre class="r"><code># See the function to generate predictive posterior samples
+repl &lt;- PissoortThesis::pred_post_samples()
+
+post.pred &lt;- apply(repl, 2, function(x) quantile(x, probs = c(0.05,0.5,0.95)))
+
+
+df.postpred &lt;- data.frame(data = max_years$data, q05 = post.pred[&quot;5%&quot;,],
+                          q50 = post.pred[&quot;50%&quot;,], q95 = post.pred[&quot;95%&quot;,],
+                          year = seq(1901:2016))
+ggplot(df.postpred) + geom_point(aes(x = year, y = data)) +
+  geom_line(aes(x = year, y = q05)) + geom_line(aes(x = year, y = q50)) +
+  geom_line(aes(x = year, y = q95)) +
+  ggtitle(&quot;Original data with PPD quantiles 5, 50 and 95%&quot;) + theme_piss()</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p>To compute this PPD from , we expressly took a range of <span class="math inline">\(116\)</span> years in the future, as we know that it is not recommended to make very long-term extrapolations. We first depict the results in Figure where we represent the PPD by its <span class="math inline">\(95\%\)</span> credible intervals, together with the observed values from <span class="math inline">\(1901\)</span> to <span class="math inline">\(2016\)</span> and the values from <span class="math inline">\(2016\)</span> to <span class="math inline">\(2131\)</span> that have been simulated from this PPD .</p>
+<pre class="r"><code>n_future &lt;- 116
+repl2 &lt;- PissoortThesis::pred_post_samples(n_future = n_future, seed = 12)
+
+post.pred2 &lt;- apply(repl2, 2, function(x) quantile(x, probs = c(0.025,0.5,0.975)))
+hpd_pred &lt;- as.data.frame(t(hdi(repl2)))
+
+df.postpred2 &lt;- data.frame(org.data = c(max_years$data,
+                                        repl2[sample(10, 1:nrow(repl2)),
+                                              117:(116+n_future)] ),
+                           q025 = post.pred2[&quot;2.5%&quot;,], q50 = post.pred2[&quot;50%&quot;,],
+                           q975 = post.pred2[&quot;97.5%&quot;,], year = 1901:(2016+n_future),
+                           &#39;data&#39; = c(rep(&#39;original&#39;, 116), rep(&#39;new&#39;, n_future)),
+                           hpd.low = hpd_pred$lower, hpd.up = hpd_pred$upper)
+
+col.interval &lt;- c(&quot;2.5%-97.5%&quot; = &quot;red&quot;, &quot;Median&quot; = &quot;blue2&quot;, &quot;HPD 95%&quot; = &quot;green2&quot;,
+                  &quot;orange&quot;, &quot;magenta&quot;)
+col.data &lt;- c(&quot;original&quot; = &quot;cyan&quot;, &quot;simulated&quot; = &quot;red&quot;, &quot;orange&quot;, &quot;magenta&quot;)
+
+g.ppd &lt;- ggplot(df.postpred2) +
+  geom_line(aes(x = year, y = q025, col = &quot;2.5%-97.5%&quot;), linetype = &quot;dashed&quot;) +
+  geom_line(aes(x = year, y = q50, col = &quot;Median&quot;)) +
+  geom_line(aes(x = year, y = q975, col =  &quot;2.5%-97.5%&quot;), linetype = &quot;dashed&quot;) +
+  geom_line(aes(x = year, y = hpd.low, col = &quot;HPD 95%&quot;), linetype = &quot;dashed&quot;) +
+  geom_line(aes(x = year, y = hpd.up , col =  &quot;HPD 95%&quot;), linetype = &quot;dashed&quot;) +
+  geom_vline(xintercept = 2016, linetype = &quot;dashed&quot;, size = 0.4, col  = 1) +
+  scale_x_continuous(breaks = c(1900, 1950, 2000, 2016, 2050, 2100, 2131),
+                     labels = c(1900, 1950, 2000, 2016, 2050, 2100, 2131) ) +
+  scale_colour_manual(name = &quot; PP intervals&quot;, values = col.interval) +
+  geom_point(data = df.postpred2[1:116,],
+             aes(x = year, y = org.data), col = &quot;black&quot; ) +
+  geom_point(data = df.postpred2[117:nrow(df.postpred2),],
+             aes(x = year, y = org.data), col = &quot;orange&quot; ) +
+  scale_fill_discrete(name = &quot;Data&quot; ) + #, values = col.data) +
+  labs(y = expression( Max~(T~degree*C)), x = &quot;Year&quot;,
+       title = &quot;Posterior Predictive quantiles with observation + 116 years simulations&quot;) +
+  theme(legend.position =  c(0.91, 0.12),
+        plot.title = element_text(size = 28, colour = &quot;#33666C&quot;,
+                                  face=&quot;bold&quot;, hjust = 0.5),
+        axis.title = element_text(size = 19, colour = &quot;#33666C&quot;, face=&quot;bold&quot;),
+        legend.title = element_text(size = 19, colour = &quot;#33666C&quot;,face=&quot;bold&quot;) )
+
+## LEngth of the intervals
+length.quantil &lt;- df.postpred2$q975 - df.postpred2$q025
+length.hpd &lt;- df.postpred2$hpd.up - df.postpred2$hpd.low
+df.length.ci &lt;- data.frame(quantiles = length.quantil,
+                           hpd = length.hpd,
+                           Year = df.postpred2$year)
+
+g.length &lt;- ggplot(df.length.ci) +
+  geom_line(aes(x = Year , y = quantiles), col = &quot;red&quot;) +
+  geom_line(aes(x = Year , y = hpd), col = &quot;green2&quot;) +
+  labs(title = &quot;Intervals&#39; lengths&quot;, y = &quot;Length&quot;) +
+  scale_x_continuous(breaks = c(1900, 1950, 2000, 2050, 2100, 2131),
+                     labels = c(1900, 1950, 2000, 2050, 2100, 2131) ) +
+  geom_vline(xintercept = 2016, linetype = &quot;dashed&quot;, size = 0.4, col  = 1) +
+  theme(plot.title = element_text(size = 17, colour = &quot;#33666C&quot;,
+                                  face=&quot;bold&quot;, hjust = 0.5),
+        axis.title = element_text(size = 10, colour = &quot;#33666C&quot;, face=&quot;bold&quot;))
+
+vp &lt;- grid::viewport(width = 0.23,
+                    height = 0.28,
+                    x = 0.65,
+                    y = 0.23)
+g.ppd
+print(g.length, vp = vp)</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-22-1.png" width="864" /></p>
+<p>We see in Figure the linear trend from the linear model on the location parameter of the posterior distribution. Indeed, we see from the above equation the contribution of the posterior <span class="math inline">\(\pi(\theta|\boldsymbol{x})\)</span> to the PPD. This Figure also clearly highlights that the PP intervals are not <span class="math inline">\(95\%\)</span> credible intervals for the observed values but rather intervals for the posterior predicted values. Indeed, coverage analysis shows that the PP intervals cover <span class="math inline">\(95\%\)</span> of the simulated values from the PPD as the number of simulations becomes very high, but only <span class="math inline">\(\approx 50\%\)</span> for the observed values. The HPD and the quantile-based credible intervals are very similar, for all the observations or simulations. However, we can see that these intervals are taking the uncertainty of predicting the future into account as they exponentially increase beyond the range of data. In fact, the evolution of the PP quantiles is linear when in the range of data, and so is the PP median even beyond the range of the data. But, in extrapolation, the PP upper quantiles will have an increasing slope over time while the PP lower quantiles will have a decreasing slope.</p>
+<p>To better understand the PPD with a global view and in order to obtain a more convenient visual quantification of the predictive uncertainty over time, we present the following Figure :</p>
+<pre class="r"><code>library(ggjoy)
+library(viridis)
+## Provide better visualizatons with geom_joy(). ( include it in the package !!!)
+## Definition of parameters is straightfoward : it defines time at which we predict
+# An by = is the number of densities we want to draw !
+&#39;posterior_pred_ggplot&#39; &lt;- function(from = 1, until = nrow(max_years$df),
+                                    n_future = 0, by = 10, x_coord = c(27,35)) {
+
+  repl2 &lt;- PissoortThesis::pred_post_samples(from = from, until = until,
+                                             n_future = n_future)
+
+  repl2_df &lt;- data.frame(repl2)
+  colnames(repl2_df) &lt;- seq(from + 1900, length = ncol(repl2))
+
+  ## Compute some quantiles to later draw on the plot
+  quantiles_repl2 &lt;- apply(repl2_df, 2,
+                           function(x) quantile(x , probs = c(.025, 0.05,
+                                                              0.5, 0.95, 0.975)) )
+  quantiles_repl2 &lt;- as.data.frame(t(quantiles_repl2))
+  quantiles_repl2$year &lt;- colnames(repl2_df)
+
+  repl2_df_gg &lt;- repl2_df[, seq(1, (until + n_future) - from, by = by)] %&gt;%
+    gather(year, value)
+
+  col.quantiles &lt;- c(&quot;2.5%-97.5%&quot; = &quot;red&quot;, &quot;Median&quot; = &quot;black&quot;, &quot;HPD 95%&quot; = &quot;green2&quot;)
+
+  last_year &lt;- as.character((until + n_future) - from + 1900)
+  titl &lt;- paste(&quot;Posterior Predictive densities evolution in [ 1901 -&quot;, last_year,&quot;] with linear model on location&quot;)
+  subtitl &lt;- paste(&quot;with some quantiles and intervals. The last density is in year &quot;, last_year, &quot;. After 2016 is extrapolation.&quot;)
+
+  #browser()
+  ## Compute the HPD intervals
+  hpd_pred &lt;- as.data.frame(t(hdi(repl2)))
+  hpd_pred$year &lt;- colnames(repl2_df)
+
+  g &lt;- ggplot(repl2_df_gg, aes(x = value, y = as.numeric(year) )) +  # %&gt;%rev() inside aes()
+    geom_joy(aes(fill = year)) +
+    geom_point(aes(x = `2.5%`, y = as.numeric(year), col = &quot;2.5%-97.5%&quot;),
+               data = quantiles_repl2, size = 0.9) +
+    geom_point(aes(x = `50%`, y = as.numeric(year), col = &quot;Median&quot;),
+               data = quantiles_repl2, size = 0.9) +
+    geom_point(aes(x = `97.5%`, y = as.numeric(year), col = &quot;2.5%-97.5%&quot;),
+               data = quantiles_repl2, size = 0.9) +
+    geom_point(aes(x = lower, y = as.numeric(year) , col = &quot;HPD 95%&quot;),
+               data = hpd_pred, size = 0.9) +
+    geom_point(aes(x = upper, y = as.numeric(year) , col = &quot;HPD 95%&quot;),
+               data = hpd_pred, size = 0.9) +
+    geom_hline(yintercept = 2016, linetype = &quot;dashed&quot;, size = 0.3, col  = 1) +
+    scale_fill_viridis(discrete = T, option = &quot;D&quot;, direction = -1, begin = .1, end = .9) +
+    scale_y_continuous(breaks = c(  seq(1901, 2016, by = by),
+      seq(2016, colnames(repl2_df)[ncol(repl2_df)], by = by) ) )  +
+    coord_cartesian(xlim = x_coord) +
+    theme_piss(theme = theme_minimal()) +
+    labs(x = expression( Max~(T~degree*C)), y = &quot;Year&quot;,
+         title = titl, subtitle = subtitl) +
+    scale_colour_manual(name = &quot;Intervals&quot;, values = col.quantiles) +
+    guides(colour = guide_legend(override.aes = list(size=4))) +
+    theme(legend.position = c(.952, .37),
+          plot.subtitle = element_text(hjust = 0.5,face = &quot;italic&quot;),
+          plot.caption = element_text(hjust = 0.1,face = &quot;italic&quot;))
+  g
+}
+
+
+## All
+posterior_pred_ggplot(from = 1, x_coord = c(27, 38),
+                      n_future = nrow(max_years$df), by = 12)</code></pre>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p>From this Figure, we also notice the linear trend and we visualize more clearly the evolution of the quantiles over time with their gap increasing after <span class="math inline">\(2016\)</span>, i.e. from their deviation to the median. This comes from the predictive density distributions that become more and more flat after <span class="math inline">\(2016\)</span>, indicating an increasing variance and hence the inclusion of the prediction uncertainty through the PPD.</p>
+<p>Interesting information can come from these PP plots when considering other models, and the shape of the predictive densities is sometimes interesting. But, the parametric models considered are rather limited, and other models need to be developed. For example, step-change models, or more flexible models by following the idea of . It would then be interesting to consider .</p>
+<p><strong>To be continued</strong> : <span class="math inline">\(\underline{\boldsymbol{\text{Further &#39;diagnostics&#39; on the posterior predictive accuracy}}} :\)</span></p>
+</div>
+</div>
+<div id="shiny-applications" class="section level1">
+<h1>Shiny Applications</h1>
+<pre class="r"><code>knitr::include_app(&quot;https://proto4426.shinyapps.io/Bayesian_GibbsCpp/&quot;, height = &quot;900px&quot;)</code></pre>
+<iframe src="https://proto4426.shinyapps.io/Bayesian_GibbsCpp/?showcase=0" width="672" height="900px">
+</iframe>
+<p>The code is available <a href="https://github.com/proto4426/PissoortThesis/tree/master/inst/shiny-examples/Bayesian">here</a></p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-dey_extreme_2016">
+<p>Dey, Dipak K., and Jun Yan. 2016. <em>Extreme Value Modeling and Risk Analysis: Methods and Applications</em>. CRC Press.</p>
+</div>
+<div id="ref-hartmann_bayesian_2016">
+<p>Hartmann, Marcelo, and Ricardo Ehlers. 2016. “Bayesian Inference for Generalized Extreme Value Distributions via Hamiltonian Monte Carlo.” <em>Communications in Statistics - Simulation and Computation</em>, March, 0–0. doi:<a href="https://doi.org/10.1080/03610918.2016.1152365">10.1080/03610918.2016.1152365</a>.</p>
+</div>
+</div>
+</div>

@@ -2,21 +2,39 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Categories on Antoine Pissoort</title>
-    <link>/categories/</link>
+    <link>https://pissoorta.netlify.com/categories/</link>
     <description>Recent content in Categories on Antoine Pissoort</description>
     <generator>Hugo -- gohugo.io</generator>
     <managingEditor>antoine.pissoort@gmail.com (Antoine Pissoort)</managingEditor>
     <webMaster>antoine.pissoort@gmail.com (Antoine Pissoort)</webMaster>
     
-	<atom:link href="/categories/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://pissoorta.netlify.com/categories/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>R</title>
-      <link>/categories/r/</link>
+      <title>Bayesian</title>
+      <link>https://pissoorta.netlify.com/categories/bayesian/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
-      <guid>/categories/r/</guid>
+      <guid>https://pissoorta.netlify.com/categories/bayesian/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>R</title>
+      <link>https://pissoorta.netlify.com/categories/r/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
+      <guid>https://pissoorta.netlify.com/categories/r/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Visualization</title>
+      <link>https://pissoorta.netlify.com/categories/visualization/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <author>antoine.pissoort@gmail.com (Antoine Pissoort)</author>
+      <guid>https://pissoorta.netlify.com/categories/visualization/</guid>
       <description></description>
     </item>
     
