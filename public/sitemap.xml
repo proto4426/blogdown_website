@@ -13,13 +13,13 @@
   </url>
   
   <url>
-    <loc>/tags/bayesian/</loc>
-    <lastmod>2017-03-07T00:00:00+00:00</lastmod>
+    <loc>/categories/bayesian/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/categories/bayesian/</loc>
+    <loc>/tags/bayesian/</loc>
+    <lastmod>2017-03-07T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -67,13 +67,13 @@
   </url>
   
   <url>
-    <loc>/tags/r/</loc>
-    <lastmod>2017-03-07T00:00:00+00:00</lastmod>
+    <loc>/categories/r/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/categories/r/</loc>
+    <loc>/tags/r/</loc>
+    <lastmod>2017-03-07T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   

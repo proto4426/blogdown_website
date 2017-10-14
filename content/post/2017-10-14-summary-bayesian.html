@@ -1,7 +1,7 @@
 ---
 title: "Bayesian methods in Extreme Value Theory"
 author: "Antoine Pissoort"
-date: "March 13, 2017"
+#date: "March 13, 2017"
 slug: summary-bayesian
 categories:
   - R
@@ -52,7 +52,7 @@ mh.mcmc1 &lt;- MH_mcmc.own(start1, varmat %*% c(.36,.46,.57))</code></pre>
 <pre><code>## acceptance rate is    0.27748</code></pre>
 <pre class="r"><code>colnames(mh.mcmc1$out.chain) &lt;- c(&quot;mu&quot;, &quot;logsig&quot;, &quot;xi&quot;, &quot;iter&quot;)
 chains.plotOwn(mh.mcmc1$out.chain)</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 <p>We can visually verify that here, the posterior’s components (=parameters) are update simultaneously, i.e. jumps occur at the same time. (there are of course still not of the same “size”, this not veery visible here)</p>
 <p>However, it seems OK. Chains are good, it mix well, and acceptance rate is around 0.25,…. Parameter space could seem quite correctly visited.</p>
 <p><strong>Beware</strong>: add <em>Burn-in</em> should be more prudent. We will handle that in the following.</p>
@@ -74,7 +74,7 @@ gibb1$out.chain &lt;- gibb1$out.chain[-(1:burn),]
 
 
 chains.plotOwn(gibb1$out.chain)</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 <p>Here, we can first verify by eyes that the parameters are updated independently, that is one at time. It means that we generate different proposals for each parameter’s update, see above <code>gibbs_mcmc.own()</code>.</p>
 <p>Chains seem well stationnary. Acceptance rates are good too. This is, again, managed by a tuning of the proposal’s variance , made by trial-and-error (so far).</p>
 <p>For example, we could then see what <strong>rough estimate</strong> this would yield. We averaged the value over the chains, and compare it with those obtained by the same frequentist method (GEV)</p>
@@ -220,9 +220,9 @@ cat(&quot;acceptance rates are :&quot;)</code></pre>
 <pre class="r"><code>colnames(gibbs.trend$out.chain) &lt;- c(&quot;mu&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;, &quot;chain.nbr&quot;, &quot;iter&quot;)
 
 PissoortThesis::chains.plotOwn(gibbs.trend$out.chain )</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <pre class="r"><code>ggplot(gibbs.trend$out.chain) + geom_line(aes(x = iter, y = mu1)) + theme_piss(16,14) + labs(ylab = &quot;mu1&quot;, xlab = &quot;iter&quot; ) +  geom_hline(aes(yintercept = mean(gibbs.trend$out.chain$mu1), col = &quot;Posterior mean&quot;), linetype = &quot;dashed&quot;, size = 0.7)</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>Mixing properties look relatively good for each of the parameter’s chains. Even for <span class="math inline">\(\mu_{trend}\)</span> (last one), as compared with our fail with <code>evdbayes package</code> ! (…)</p>
 <p>Now, we must go further with <strong>diagnostics</strong>.</p>
 <div id="diagnostics" class="section level2">
@@ -235,13 +235,13 @@ chain.mix &lt;- cbind.data.frame(gibbs.trend$out.chain,
                               iter.chain = rep(1:500, 4))
 g &lt;- mixchains.Own(chain.mix)
 g$gmu</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <pre class="r"><code>g$gmutrend</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
 <pre class="r"><code>g$glogsig</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-3.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-3.png" width="672" /></p>
 <pre class="r"><code>g$gxi</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-4.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-4.png" width="672" /></p>
 <p>Chain mixing seem quite well meaning that, whatever the starting value we use, which are actually very broad (see above), the behaviour of the generated chains are similar, in the sense that they are “reaching” in the same way the targetted stationary distribution.</p>
 <p><strong>Gelman-Rubin (Coda) Diagnostics</strong></p>
 <p>This diagnostic compares the behaviour of the several randomly initialized chains. It uses the <em>potential scal reduction statistic</em> (or <em>shrink factor</em>) <span class="math inline">\(\hat{R}\)</span> which measures now <strong>quantitatively</strong> the mixing of the chains. To do that, It measures the ratio of the average variance of samples within each chain to the variance of the pooled samples accross chains. If convergence occured, these should be the same and <span class="math inline">\(\hat{R}\)</span> will be 1. If not, this will be &gt;1.</p>
@@ -259,7 +259,7 @@ gelman.plot(mc.listDiag4(gibbs.trend$out.ind), autoburnin=F, auto.layout = T)
 
 ##  In ggplot : Put all on the same y-scales
 gp.dat &lt;- gelman.plot(mc.listDiag4(gibbs.trend$out.ind), autoburnin=F)</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 <pre class="r"><code>df = data.frame(bind_rows(as.data.frame(gp.dat[[&quot;shrink&quot;]][,,1]),
                           as.data.frame(gp.dat[[&quot;shrink&quot;]][,,2])),
                 q = rep(dimnames(gp.dat[[&quot;shrink&quot;]])[[3]],
@@ -285,7 +285,7 @@ ggplot(df_gg,
   theme(strip.text = element_text(size=15),
         plot.subtitle = element_text(size = 21, hjust = 0.5,
                                      colour = &quot;#33666C&quot;, face = &quot;bold&quot;))</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-12-2.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-12-2.png" width="672" /></p>
 <p><strong>(look at y scales !!!!!)</strong></p>
 <p>We can see that it is quite close to 1, for every chains and for this (‘small’) number of iterations. The common rule is to be more prudent whenever <span class="math inline">\(\hat{R}&gt;1.1\)</span>. We remark that for <span class="math inline">\(\xi\)</span>, it seems to take more iterations before reaching stationary distribution.</p>
 <p>Note that we did not make any <em>thinning</em> so far, i.e. we did not take only one simulation every <em>thin</em> number of simulations. This process is widely used in the litterature and it is useful to reduce autocorrelations through the chains. However, it has also been proven that <em>thinning</em> the chains is actually less efficient than keeping all the generated samples for inference… The greater sample size effect of no thinning is generally stronger than the autocorrelation reduce factor of thinning It could be easily implemented.</p>
@@ -298,7 +298,7 @@ param.chain[, &quot;sigma&quot;] &lt;- exp(param.chain[,&quot;logsig&quot;])
 #autocorr(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)] ))
 #autocorr.diag(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)] ))
 autocorr.plot(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)]  ))</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 <p>We can see that the autocorrelation behaviour for the chains seem quite fine.</p>
 <p>Again, we can remark that this is a bit more “slow” for <span class="math inline">\(\xi\)</span>, as we could expect.</p>
 <p><strong>Cross-correlations : </strong></p>
@@ -306,13 +306,13 @@ autocorr.plot(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsi
 <pre class="r"><code>crosscorr.plot(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)]  ),
                 title = &quot;Cross-correlation&quot;)
 title(&quot;Cross-correlation&quot;)</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 <pre class="r"><code># In ggplot
 library(ggcorrplot)
 ggcorrplot(crosscorr(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)])),
            hc.order = TRUE, type = &quot;lower&quot;, lab = TRUE, title = &quot;Cross-correlation&quot;,
            ggtheme = PissoortThesis::theme_piss)</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-14-2.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-14-2.png" width="672" /></p>
 <pre class="r"><code># Compare it with Fisher information matrix (&#39;frequentist&#39;) by MLE with ismev
 cr.corr_lin &lt;- crosscorr(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;sigma&quot;, &quot;xi&quot;)]))
 dimnames(gev_nonstatio$cov) &lt;- dimnames(cr.corr_lin)
@@ -338,7 +338,7 @@ cov2cor(gev_nonstatio$cov)  ;    cr.corr_lin</code></pre>
 ## 0.61654784 0.67187309 0.28074459 0.08308954 0.29433880</code></pre>
 <p>Now, we partitionned the first half into 20 segments of iterations,</p>
 <pre class="r"><code>geweke.plot(mcmc(param.chain), nbins = 20) </code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-16-1.png" width="576" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-16-1.png" width="576" /></p>
 <p>Maybe a few <strong>more iterations</strong> could not be too much to convince ourself that convergence did really occur, especially again for <span class="math inline">\(\xi\)</span> for which the p-value is not far from the common level of <span class="math inline">\(5\%\)</span> .</p>
 <p><strong>Raftery and Lewis’s Diagnostics</strong></p>
 <p>This is a run length control diagnostic based on a criterion of accuracy of estimation of a quantile q. It also informs if the number of iterations is too small.</p>
@@ -608,7 +608,7 @@ grid.arrange( g1, g4, g2, g3, nrow = 2,
                                    gp = grid::gpar(col = &quot;#33666C&quot;,
                                                    fontsize = 20,
                                                    font = 4), vjust = 0.4))</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-19-1.png" width="816" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-19-1.png" width="816" /></p>
 <p><strong>Comparisons with Frequentist’s results (GEV) :</strong></p>
 <pre class="r"><code>par_gibbs_trend &lt;- apply(gibbs.trend$out.chain[,c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)],
                          2, mean) # Average over the (3) generated chains
@@ -674,7 +674,7 @@ ggplot(df.postpred) + geom_point(aes(x = year, y = data)) +
   geom_line(aes(x = year, y = q05)) + geom_line(aes(x = year, y = q50)) +
   geom_line(aes(x = year, y = q95)) +
   ggtitle(&quot;Original data with PPD quantiles 5, 50 and 95%&quot;) + theme_piss()</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
 <p>To compute this PPD from , we expressly took a range of <span class="math inline">\(116\)</span> years in the future, as we know that it is not recommended to make very long-term extrapolations. We first depict the results in Figure where we represent the PPD by its <span class="math inline">\(95\%\)</span> credible intervals, together with the observed values from <span class="math inline">\(1901\)</span> to <span class="math inline">\(2016\)</span> and the values from <span class="math inline">\(2016\)</span> to <span class="math inline">\(2131\)</span> that have been simulated from this PPD .</p>
 <pre class="r"><code>n_future &lt;- 116
 repl2 &lt;- PissoortThesis::pred_post_samples(n_future = n_future, seed = 12)
@@ -741,7 +741,7 @@ vp &lt;- grid::viewport(width = 0.23,
                     y = 0.23)
 g.ppd
 print(g.length, vp = vp)</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-22-1.png" width="864" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-22-1.png" width="864" /></p>
 <p>We see in Figure the linear trend from the linear model on the location parameter of the posterior distribution. Indeed, we see from the above equation the contribution of the posterior <span class="math inline">\(\pi(\theta|\boldsymbol{x})\)</span> to the PPD. This Figure also clearly highlights that the PP intervals are not <span class="math inline">\(95\%\)</span> credible intervals for the observed values but rather intervals for the posterior predicted values. Indeed, coverage analysis shows that the PP intervals cover <span class="math inline">\(95\%\)</span> of the simulated values from the PPD as the number of simulations becomes very high, but only <span class="math inline">\(\approx 50\%\)</span> for the observed values. The HPD and the quantile-based credible intervals are very similar, for all the observations or simulations. However, we can see that these intervals are taking the uncertainty of predicting the future into account as they exponentially increase beyond the range of data. In fact, the evolution of the PP quantiles is linear when in the range of data, and so is the PP median even beyond the range of the data. But, in extrapolation, the PP upper quantiles will have an increasing slope over time while the PP lower quantiles will have a decreasing slope.</p>
 <p>To better understand the PPD with a global view and in order to obtain a more convenient visual quantification of the predictive uncertainty over time, we present the following Figure :</p>
 <pre class="r"><code>library(ggjoy)
@@ -811,7 +811,7 @@ library(viridis)
 ## All
 posterior_pred_ggplot(from = 1, x_coord = c(27, 38),
                       n_future = nrow(max_years$df), by = 12)</code></pre>
-<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
 <p>From this Figure, we also notice the linear trend and we visualize more clearly the evolution of the quantiles over time with their gap increasing after <span class="math inline">\(2016\)</span>, i.e. from their deviation to the median. This comes from the predictive density distributions that become more and more flat after <span class="math inline">\(2016\)</span>, indicating an increasing variance and hence the inclusion of the prediction uncertainty through the PPD.</p>
 <p>Interesting information can come from these PP plots when considering other models, and the shape of the predictive densities is sometimes interesting. But, the parametric models considered are rather limited, and other models need to be developed. For example, step-change models, or more flexible models by following the idea of . It would then be interesting to consider .</p>
 <p><strong>To be continued</strong> : <span class="math inline">\(\underline{\boldsymbol{\text{Further &#39;diagnostics&#39; on the posterior predictive accuracy}}} :\)</span></p>
