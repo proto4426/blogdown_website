@@ -13,7 +13,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [Params]
   subtitle = "Personal Website : Statistics - Data Science"
-  logo = "img/kaggle_sun.png"
+  logo = "img/kaggle_sun.jpg"
   favicon = "img/favicon.ico"
   dateFormat = "January 2, 2006"
   commit = false
@@ -21,28 +21,16 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   comments = true
 #  gcse = "012345678901234567890:abcdefghijk" # Get your code from google.com/cse. Make sure to go to "Look and Feel" and change Layout to "Full Width" and Theme to "Classic"
 
-#[[Params.bigimg]]
-#  src = "img/triangle.jpg"
-#  desc = "Triangle"
-#[[Params.bigimg]]
-#  src = "img/sphere.jpg"
-#  desc = "Sphere"
-#[[Params.bigimg]]
-#  src = "img/hexagon.jpg"
-#  desc = "Hexagon"
 
 [Author]
   name = "Antoine Pissoort"
   #website = "yourwebsite.com"
   email = "antoine.pissoort@gmail.com"
 
-  github = "username"
-  gitlab = "username"
-  twitter = "username"
-  reddit = "username"
-  linkedin = "username"
-  xing = "username"
-  stackoverflow = "users/XXXXXXX/username"
+  github = "proto4426"
+  linkedin = "Antoine Pissoort"
+  #stackoverflow = "Antoine Pissoort"
+  stackoverflow = "users/5678813/antoine-pissoort"
   #snapchat = "username"
   #instagram = "username"
   #youtube = "user/username" # or channel/channelname
