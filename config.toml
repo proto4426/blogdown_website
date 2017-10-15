@@ -31,16 +31,6 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   linkedin = "Antoine Pissoort"
   #stackoverflow = "Antoine Pissoort"
   stackoverflow = "users/5678813/antoine-pissoort"
-  #snapchat = "username"
-  #instagram = "username"
-  #youtube = "user/username" # or channel/channelname
-  #soundcloud = "username"
-  #spotify = "username"
-  #bandcamp = "username"
-  #itchio = "username"
-  #vk = "username"
-  #paypal = "username"
-  #telegram = "username"
 
 [[menu.main]]
     name = "Blog"
