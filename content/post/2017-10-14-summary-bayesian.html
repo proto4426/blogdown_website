@@ -1,7 +1,7 @@
 ---
 title: "Bayesian methods in Extreme Value Theory"
 author: "Antoine Pissoort"
-#date: "March 13, 2017"
+date: "March 13, 2017"
 slug: summary-bayesian
 categories:
   - R
@@ -14,8 +14,51 @@ tags:
   - Bayesian
   - statistics
 bibliography: sum.bib
+output:
+  blogdown::html_page:
+    fig_retina: 2
+    fig_width: 7
+    dev: svg
+    highlight: pygments
 ---
 
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
 
 
 <p>We found that <em>evdbayes</em> package typically uses the <em>Metropolis-Hastings</em> (MH) algorithm as MCMC sampler. We are aware that this probably not the most efficient algorithm available in the literature, but it is “easy” to implement and understand. <strong>Beware</strong> : We do not know if it is either the MH or the Gibbs sampler which is implemented when doing simulations with this package. <span class="citation">(Hartmann and Ehlers 2016)</span> state in their article that it is the MH but in the package’s source functions we see that this is rather the Gibbs sampler. We found no information about it somewhere else provided in the package….</p>
@@ -25,65 +68,65 @@ bibliography: sum.bib
 <p><strong>3.</strong> <em>revdbayes</em> ? Using sample ratio of uniforms (…) Not yet studied</p>
 <p><strong>Functions that we will use for the Bayesian setting</strong> :</p>
 <p>Look at the <code>PissoortThesis</code> package</p>
-<pre class="r"><code>library(PissoortThesis)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(PissoortThesis)</code></pre></div>
 <p>Notice that we will use <strong>non-informative</strong>, i.e. large variance <strong>priors</strong> (so far?) in the following.</p>
 <div id="first-implementations-stationary-gev-setting" class="section level1">
 <h1>First implementations : stationary GEV setting</h1>
 <div id="metropolis-hastlings" class="section level2">
 <h2>Metropolis-Hastlings</h2>
 <p>It is recommended to target <em>an acceptance rate of around 0.25 when all components of</em> <span class="math inline">\(\theta\)</span> <em>are updated simultaneously, and 0.40 when the components are updated one at a time.</em></p>
-<pre class="r"><code># Optimize Posterior Density Function to find starting values
-fn &lt;- function(par, data) -log_post0(par[1], par[2], par[3], data)
-param &lt;- c(mean(max_years$df$Max),log(sd(max_years$df$Max)), 0.1 )
-# opt &lt;- optim(param, fn, data = max_years$data, 
-#              method=&quot;BFGS&quot;, hessian = TRUE)
-opt &lt;- nlm(fn, param, data = max_years$data,
-           hessian=T, iterlim = 1e5) 
-start1 &lt;- opt$estimate
-Sig &lt;- solve(opt$hessian)
-ev &lt;- eigen( (2.4/sqrt(2))^2 * Sig)
-varmat &lt;- ev$vectors %*% diag(sqrt(ev$values)) %*% t(ev$vectors)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Optimize Posterior Density Function to find starting values</span>
+fn &lt;-<span class="st"> </span><span class="cf">function</span>(par, data) <span class="op">-</span><span class="kw">log_post0</span>(par[<span class="dv">1</span>], par[<span class="dv">2</span>], par[<span class="dv">3</span>], data)
+param &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">mean</span>(max_years<span class="op">$</span>df<span class="op">$</span>Max),<span class="kw">log</span>(<span class="kw">sd</span>(max_years<span class="op">$</span>df<span class="op">$</span>Max)), <span class="fl">0.1</span> )
+<span class="co"># opt &lt;- optim(param, fn, data = max_years$data, </span>
+<span class="co">#              method=&quot;BFGS&quot;, hessian = TRUE)</span>
+opt &lt;-<span class="st"> </span><span class="kw">nlm</span>(fn, param, <span class="dt">data =</span> max_years<span class="op">$</span>data,
+           <span class="dt">hessian=</span>T, <span class="dt">iterlim =</span> <span class="fl">1e5</span>) 
+start1 &lt;-<span class="st"> </span>opt<span class="op">$</span>estimate
+Sig &lt;-<span class="st"> </span><span class="kw">solve</span>(opt<span class="op">$</span>hessian)
+ev &lt;-<span class="st"> </span><span class="kw">eigen</span>( (<span class="fl">2.4</span><span class="op">/</span><span class="kw">sqrt</span>(<span class="dv">2</span>))<span class="op">^</span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>Sig)
+varmat &lt;-<span class="st"> </span>ev<span class="op">$</span>vectors <span class="op">%*%</span><span class="st"> </span><span class="kw">diag</span>(<span class="kw">sqrt</span>(ev<span class="op">$</span>values)) <span class="op">%*%</span><span class="st"> </span><span class="kw">t</span>(ev<span class="op">$</span>vectors)
 
-set.seed(100)
-iter &lt;- 
-mh.mcmc1 &lt;- MH_mcmc.own(start1, varmat %*% c(.36,.46,.57))</code></pre>
-<pre><code>## [1] &quot;time is  0.199  sec&quot;</code></pre>
-<pre class="r"><code>cat(paste(&quot;acceptance rate is   &quot;, round(mh.mcmc1$mean.acc_rates,5 )))</code></pre>
+<span class="kw">set.seed</span>(<span class="dv">100</span>)
+iter &lt;-<span class="st"> </span>
+mh.mcmc1 &lt;-<span class="st"> </span><span class="kw">MH_mcmc.own</span>(start1, varmat <span class="op">%*%</span><span class="st"> </span><span class="kw">c</span>(.<span class="dv">36</span>,.<span class="dv">46</span>,.<span class="dv">57</span>))</code></pre></div>
+<pre><code>## [1] &quot;time is  0.498  sec&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(<span class="kw">paste</span>(<span class="st">&quot;acceptance rate is   &quot;</span>, <span class="kw">round</span>(mh.mcmc1<span class="op">$</span>mean.acc_rates,<span class="dv">5</span> )))</code></pre></div>
 <pre><code>## acceptance rate is    0.27748</code></pre>
-<pre class="r"><code>colnames(mh.mcmc1$out.chain) &lt;- c(&quot;mu&quot;, &quot;logsig&quot;, &quot;xi&quot;, &quot;iter&quot;)
-chains.plotOwn(mh.mcmc1$out.chain)</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">colnames</span>(mh.mcmc1<span class="op">$</span>out.chain) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;logsig&quot;</span>, <span class="st">&quot;xi&quot;</span>, <span class="st">&quot;iter&quot;</span>)
+<span class="kw">chains.plotOwn</span>(mh.mcmc1<span class="op">$</span>out.chain)</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-2-1.svg" width="672" /></p>
 <p>We can visually verify that here, the posterior’s components (=parameters) are update simultaneously, i.e. jumps occur at the same time. (there are of course still not of the same “size”, this not veery visible here)</p>
 <p>However, it seems OK. Chains are good, it mix well, and acceptance rate is around 0.25,…. Parameter space could seem quite correctly visited.</p>
 <p><strong>Beware</strong>: add <em>Burn-in</em> should be more prudent. We will handle that in the following.</p>
 </div>
 <div id="gibbs-sampler" class="section level2">
 <h2>GIBBS sampler</h2>
-<pre class="r"><code>set.seed(100)
-iter &lt;- 2000
-gibb1 &lt;- gibbs_mcmc.own(list(start1), iter = iter) # Same starting point as MH </code></pre>
-<pre><code>## [1] &quot;time is  1.089  sec&quot;</code></pre>
-<pre class="r"><code>cat(&quot;acceptance rates are &quot;)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">100</span>)
+iter &lt;-<span class="st"> </span><span class="dv">2000</span>
+gibb1 &lt;-<span class="st"> </span><span class="kw">gibbs_mcmc.own</span>(<span class="kw">list</span>(start1), <span class="dt">iter =</span> iter) <span class="co"># Same starting point as MH </span></code></pre></div>
+<pre><code>## [1] &quot;time is  1.688  sec&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>(<span class="st">&quot;acceptance rates are &quot;</span>)</code></pre></div>
 <pre><code>## acceptance rates are</code></pre>
-<pre class="r"><code>round(gibb1$mean_acc.rates[[1]], 5 )</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">round</span>(gibb1<span class="op">$</span>mean_acc.rates[[<span class="dv">1</span>]], <span class="dv">5</span> )</code></pre></div>
 <pre><code>## [1] 0.49060 0.56214 0.49674</code></pre>
-<pre class="r"><code># Do not forget Burn in period (We will make it inside function in  following)
-burn &lt;- iter/4  # Tune value
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Do not forget Burn in period (We will make it inside function in  following)</span>
+burn &lt;-<span class="st"> </span>iter<span class="op">/</span><span class="dv">4</span>  <span class="co"># Tune value</span>
 
-gibb1$out.chain &lt;- gibb1$out.chain[-(1:burn),]
+gibb1<span class="op">$</span>out.chain &lt;-<span class="st"> </span>gibb1<span class="op">$</span>out.chain[<span class="op">-</span>(<span class="dv">1</span><span class="op">:</span>burn),]
 
 
-chains.plotOwn(gibb1$out.chain)</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<span class="kw">chains.plotOwn</span>(gibb1<span class="op">$</span>out.chain)</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-3-1.svg" width="672" /></p>
 <p>Here, we can first verify by eyes that the parameters are updated independently, that is one at time. It means that we generate different proposals for each parameter’s update, see above <code>gibbs_mcmc.own()</code>.</p>
 <p>Chains seem well stationnary. Acceptance rates are good too. This is, again, managed by a tuning of the proposal’s variance , made by trial-and-error (so far).</p>
 <p>For example, we could then see what <strong>rough estimate</strong> this would yield. We averaged the value over the chains, and compare it with those obtained by the same frequentist method (GEV)</p>
-<pre class="r"><code>param_gibbs &lt;- apply(gibb1$out.chain[,1:3], 2, mean) # Average over the (3) generated chains
-param_gibbs[&quot;logsig&quot;] &lt;- exp(param_gibbs[&quot;logsig&quot;] ) 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">param_gibbs &lt;-<span class="st"> </span><span class="kw">apply</span>(gibb1<span class="op">$</span>out.chain[,<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>], <span class="dv">2</span>, mean) <span class="co"># Average over the (3) generated chains</span>
+param_gibbs[<span class="st">&quot;logsig&quot;</span>] &lt;-<span class="st"> </span><span class="kw">exp</span>(param_gibbs[<span class="st">&quot;logsig&quot;</span>] ) 
 
-frame &lt;- data.frame(Bayesian = param_gibbs, &#39;Frequentist(mle)&#39; = gev_fit$mle)
-row.names(frame) = c(&quot;$\\mu \\ $&quot;, &quot;$\\sigma \\quad$&quot;, &quot;$\\xi \\quad$&quot;)
-knitr::kable(frame, align = &#39;l&#39;)</code></pre>
+frame &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">Bayesian =</span> param_gibbs, <span class="st">&#39;Frequentist(mle)&#39;</span> =<span class="st"> </span>gev_fit<span class="op">$</span>mle)
+<span class="kw">row.names</span>(frame) =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;$</span><span class="ch">\\</span><span class="st">mu </span><span class="ch">\\</span><span class="st"> $&quot;</span>, <span class="st">&quot;$</span><span class="ch">\\</span><span class="st">sigma </span><span class="ch">\\</span><span class="st">quad$&quot;</span>, <span class="st">&quot;$</span><span class="ch">\\</span><span class="st">xi </span><span class="ch">\\</span><span class="st">quad$&quot;</span>)
+knitr<span class="op">::</span><span class="kw">kable</span>(frame, <span class="dt">align =</span> <span class="st">&#39;l&#39;</span>)</code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -118,38 +161,38 @@ knitr::kable(frame, align = &#39;l&#39;)</code></pre>
 <h1>Gibbs Sampler with <strong>Nonstationarity</strong> (GEV, linear trend)</h1>
 <p>From now, this will be our final model ! We will then “expand” a bit more.</p>
 <p><strong>1. We optimize log-posterior to retrieve (good) starting values from it</strong></p>
-<pre class="r"><code>data &lt;- max_years$data
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span>max_years<span class="op">$</span>data
 
 
-fn &lt;- function(par, data) -log_post1(par[1], par[2], par[3],
-                                        par[4], data)
-param &lt;- c(mean(max_years$df$Max), 0, log(sd(max_years$df$Max)), -0.1 )
-opt &lt;- optim(param, fn, data = max_years$data,
-             method = &quot;BFGS&quot;, hessian = T)
-cat(paste(&quot;Optimized starting values are : \n&quot;)) </code></pre>
+fn &lt;-<span class="st"> </span><span class="cf">function</span>(par, data) <span class="op">-</span><span class="kw">log_post1</span>(par[<span class="dv">1</span>], par[<span class="dv">2</span>], par[<span class="dv">3</span>],
+                                        par[<span class="dv">4</span>], data)
+param &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">mean</span>(max_years<span class="op">$</span>df<span class="op">$</span>Max), <span class="dv">0</span>, <span class="kw">log</span>(<span class="kw">sd</span>(max_years<span class="op">$</span>df<span class="op">$</span>Max)), <span class="op">-</span><span class="fl">0.1</span> )
+opt &lt;-<span class="st"> </span><span class="kw">optim</span>(param, fn, <span class="dt">data =</span> max_years<span class="op">$</span>data,
+             <span class="dt">method =</span> <span class="st">&quot;BFGS&quot;</span>, <span class="dt">hessian =</span> T)
+<span class="kw">cat</span>(<span class="kw">paste</span>(<span class="st">&quot;Optimized starting values are : </span><span class="ch">\n</span><span class="st">&quot;</span>)) </code></pre></div>
 <pre><code>## Optimized starting values are :</code></pre>
-<pre class="r"><code>print &lt;- opt$par
-names(print) &lt;- c(&quot;mu&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)
-print</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">print &lt;-<span class="st"> </span>opt<span class="op">$</span>par
+<span class="kw">names</span>(print) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;mu1&quot;</span>, <span class="st">&quot;logsig&quot;</span>, <span class="st">&quot;xi&quot;</span>)
+print</code></pre></div>
 <pre><code>##         mu        mu1     logsig         xi 
 ## 30.6116390  2.9449779  0.6235831 -0.2092809</code></pre>
 <p>However, we will run several chains with this algorithms to improve convergence properties. Hence, we will have several starting values. These starting values will thus be put inside a <em>random generator of starting starting values</em> <span class="math inline">\(\Longrightarrow\downarrow\)</span></p>
 <p><strong>2. Choose several sets of Starting Values randomly :</strong></p>
 <p>This enables to run several different chains. This will be useful for further assesment of the convergence. These sets of starting values must be (over)dispersed to ensure the visit of the whole parameter space. <strong>Note</strong> that these have to be (re)tuned.</p>
-<pre class="r"><code>set.seed(100)
-start &lt;- list() ; k &lt;- 1 # Put them on a list
-while(k &lt; 5) { # starting value is randomly selected from a distribution
-  # that is overdispersed relative to the target
-  sv &lt;- as.numeric(rmvnorm(1, opt$par, 50 * solve(opt$hessian)))
-  svlp &lt;- log_post1(sv[1], sv[2], sv[3], sv[4], max_years$data)
-  #print(svlp)
-  if(is.finite(svlp)) {
-    start[[k]] &lt;- sv
-    names(start[[k]]) &lt;- c(&quot;mu&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)
-    k &lt;- k + 1
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">100</span>)
+start &lt;-<span class="st"> </span><span class="kw">list</span>() ; k &lt;-<span class="st"> </span><span class="dv">1</span> <span class="co"># Put them on a list</span>
+<span class="cf">while</span>(k <span class="op">&lt;</span><span class="st"> </span><span class="dv">5</span>) { <span class="co"># starting value is randomly selected from a distribution</span>
+  <span class="co"># that is overdispersed relative to the target</span>
+  sv &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">rmvnorm</span>(<span class="dv">1</span>, opt<span class="op">$</span>par, <span class="dv">50</span> <span class="op">*</span><span class="st"> </span><span class="kw">solve</span>(opt<span class="op">$</span>hessian)))
+  svlp &lt;-<span class="st"> </span><span class="kw">log_post1</span>(sv[<span class="dv">1</span>], sv[<span class="dv">2</span>], sv[<span class="dv">3</span>], sv[<span class="dv">4</span>], max_years<span class="op">$</span>data)
+  <span class="co">#print(svlp)</span>
+  <span class="cf">if</span>(<span class="kw">is.finite</span>(svlp)) {
+    start[[k]] &lt;-<span class="st"> </span>sv
+    <span class="kw">names</span>(start[[k]]) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;mu1&quot;</span>, <span class="st">&quot;logsig&quot;</span>, <span class="st">&quot;xi&quot;</span>)
+    k &lt;-<span class="st"> </span>k <span class="op">+</span><span class="st"> </span><span class="dv">1</span>
   }
 }
-knitr::kable(matrix(unlist(start), ncol = 4, byrow = T, dimnames = list(c(&quot;start[[1]]&quot;, &quot;start[[2]]&quot;, &quot;start[[3]]&quot;, &quot;start[[4]]&quot;), c(&quot;$\\mu \\ $&quot;,&quot;$\\mu_{trend}$&quot;, &quot;$\\sigma$&quot;, &quot;$\\xi$&quot;))), align = &quot;c&quot;)</code></pre>
+knitr<span class="op">::</span><span class="kw">kable</span>(<span class="kw">matrix</span>(<span class="kw">unlist</span>(start), <span class="dt">ncol =</span> <span class="dv">4</span>, <span class="dt">byrow =</span> T, <span class="dt">dimnames =</span> <span class="kw">list</span>(<span class="kw">c</span>(<span class="st">&quot;start[[1]]&quot;</span>, <span class="st">&quot;start[[2]]&quot;</span>, <span class="st">&quot;start[[3]]&quot;</span>, <span class="st">&quot;start[[4]]&quot;</span>), <span class="kw">c</span>(<span class="st">&quot;$</span><span class="ch">\\</span><span class="st">mu </span><span class="ch">\\</span><span class="st"> $&quot;</span>,<span class="st">&quot;$</span><span class="ch">\\</span><span class="st">mu_{trend}$&quot;</span>, <span class="st">&quot;$</span><span class="ch">\\</span><span class="st">sigma$&quot;</span>, <span class="st">&quot;$</span><span class="ch">\\</span><span class="st">xi$&quot;</span>))), <span class="dt">align =</span> <span class="st">&quot;c&quot;</span>)</code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -194,20 +237,20 @@ knitr::kable(matrix(unlist(start), ncol = 4, byrow = T, dimnames = list(c(&quot;
 <p>Somewhat arbitrarily here, we go for <strong>4 different chains</strong> inside the function.</p>
 <p><strong>3. Run the final algorithm</strong></p>
 <p>The number of components in the <code>list()</code> “start” will automatically define the number of chains generated.</p>
-<pre class="r"><code># k chains with k different starting values
-set.seed(100)
-gibbs.trend &lt;- gibbs.trend.own(start, propsd = c(.5, 1.9, .15, .12),
-                               iter = 1000) # Number of iter is for each chain. </code></pre>
-<pre><code>## [1] &quot;time is  0.83  sec&quot;
-## [1] &quot;time is  1.824  sec&quot;
-## [1] &quot;time is  2.664  sec&quot;
-## [1] &quot;time is  3.481  sec&quot;</code></pre>
-<pre class="r"><code>acc_rates.param &lt;- colMeans(do.call(rbind, gibbs.trend$mean_acc.rates))
-cat(&quot;acceptance rates are :&quot;)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># k chains with k different starting values</span>
+<span class="kw">set.seed</span>(<span class="dv">100</span>)
+gibbs.trend &lt;-<span class="st"> </span><span class="kw">gibbs.trend.own</span>(start, <span class="dt">propsd =</span> <span class="kw">c</span>(.<span class="dv">5</span>, <span class="fl">1.9</span>, .<span class="dv">15</span>, .<span class="dv">12</span>),
+                               <span class="dt">iter =</span> <span class="dv">1000</span>) <span class="co"># Number of iter is for each chain. </span></code></pre></div>
+<pre><code>## [1] &quot;time is  1.307  sec&quot;
+## [1] &quot;time is  2.666  sec&quot;
+## [1] &quot;time is  3.944  sec&quot;
+## [1] &quot;time is  5.004  sec&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">acc_rates.param &lt;-<span class="st"> </span><span class="kw">colMeans</span>(<span class="kw">do.call</span>(rbind, gibbs.trend<span class="op">$</span>mean_acc.rates))
+<span class="kw">cat</span>(<span class="st">&quot;acceptance rates are :&quot;</span>)</code></pre></div>
 <pre><code>## acceptance rates are :</code></pre>
-<pre class="r"><code>round(acc_rates.param, 5 )</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">round</span>(acc_rates.param, <span class="dv">5</span> )</code></pre></div>
 <pre><code>## [1] 0.39501 0.37648 0.44051 0.42488</code></pre>
-<pre class="r"><code>param.chain &lt;- gibbs.trend$out.chain[ ,1:4]</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">param.chain &lt;-<span class="st"> </span>gibbs.trend<span class="op">$</span>out.chain[ ,<span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]</code></pre></div>
 <p>It runs relatively fast and the acceptance rates are all close to the target <span class="math inline">\(\approx 0.4\)</span>.</p>
 <p><strong>NOTE</strong> :</p>
 <ul>
@@ -217,12 +260,12 @@ cat(&quot;acceptance rates are :&quot;)</code></pre>
 <li></li>
 </ul>
 <p><strong>Plot of the so-obtained (complete) chains</strong></p>
-<pre class="r"><code>colnames(gibbs.trend$out.chain) &lt;- c(&quot;mu&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;, &quot;chain.nbr&quot;, &quot;iter&quot;)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">colnames</span>(gibbs.trend<span class="op">$</span>out.chain) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;mu1&quot;</span>, <span class="st">&quot;logsig&quot;</span>, <span class="st">&quot;xi&quot;</span>, <span class="st">&quot;chain.nbr&quot;</span>, <span class="st">&quot;iter&quot;</span>)
 
-PissoortThesis::chains.plotOwn(gibbs.trend$out.chain )</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
-<pre class="r"><code>ggplot(gibbs.trend$out.chain) + geom_line(aes(x = iter, y = mu1)) + theme_piss(16,14) + labs(ylab = &quot;mu1&quot;, xlab = &quot;iter&quot; ) +  geom_hline(aes(yintercept = mean(gibbs.trend$out.chain$mu1), col = &quot;Posterior mean&quot;), linetype = &quot;dashed&quot;, size = 0.7)</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+PissoortThesis<span class="op">::</span><span class="kw">chains.plotOwn</span>(gibbs.trend<span class="op">$</span>out.chain )</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-8-1.svg" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gibbs.trend<span class="op">$</span>out.chain) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> iter, <span class="dt">y =</span> mu1)) <span class="op">+</span><span class="st"> </span><span class="kw">theme_piss</span>(<span class="dv">16</span>,<span class="dv">14</span>) <span class="op">+</span><span class="st"> </span><span class="kw">labs</span>(<span class="dt">ylab =</span> <span class="st">&quot;mu1&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;iter&quot;</span> ) <span class="op">+</span><span class="st">  </span><span class="kw">geom_hline</span>(<span class="kw">aes</span>(<span class="dt">yintercept =</span> <span class="kw">mean</span>(gibbs.trend<span class="op">$</span>out.chain<span class="op">$</span>mu1), <span class="dt">col =</span> <span class="st">&quot;Posterior mean&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="dt">size =</span> <span class="fl">0.7</span>)</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-9-1.svg" width="672" /></p>
 <p>Mixing properties look relatively good for each of the parameter’s chains. Even for <span class="math inline">\(\mu_{trend}\)</span> (last one), as compared with our fail with <code>evdbayes package</code> ! (…)</p>
 <p>Now, we must go further with <strong>diagnostics</strong>.</p>
 <div id="diagnostics" class="section level2">
@@ -230,94 +273,94 @@ PissoortThesis::chains.plotOwn(gibbs.trend$out.chain )</code></pre>
 <p>No diagnostics can assess convergence without uncertainty. Then, we must use several relevant tools to increase our confidence that convergence indeed happened, i.e. the equilibrium distribution has been reached.</p>
 <p>We will now rely on some packages to do this task, namely the well-known <code>coda</code> and the <code>bayesplot</code>. While the former is present since a moment, the latter is a new great visual tool relying on <code>ggplot</code>. It is mainly used for STAN outputs but it can be used here too, after some structural refinements… but we we did not achieve it so far.</p>
 <p>Traceplots of the chains with <strong>different starting values :</strong></p>
-<pre class="r"><code>colnames(gibbs.trend$out.chain)[1] &lt;- &quot;mu0&quot;
-chain.mix &lt;- cbind.data.frame(gibbs.trend$out.chain,
-                              iter.chain = rep(1:500, 4))
-g &lt;- mixchains.Own(chain.mix)
-g$gmu</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
-<pre class="r"><code>g$gmutrend</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
-<pre class="r"><code>g$glogsig</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-3.png" width="672" /></p>
-<pre class="r"><code>g$gxi</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-4.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">colnames</span>(gibbs.trend<span class="op">$</span>out.chain)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;mu0&quot;</span>
+chain.mix &lt;-<span class="st"> </span><span class="kw">cbind.data.frame</span>(gibbs.trend<span class="op">$</span>out.chain,
+                              <span class="dt">iter.chain =</span> <span class="kw">rep</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">500</span>, <span class="dv">4</span>))
+g &lt;-<span class="st"> </span><span class="kw">mixchains.Own</span>(chain.mix)
+g<span class="op">$</span>gmu</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-1.svg" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">g<span class="op">$</span>gmutrend</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-2.svg" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">g<span class="op">$</span>glogsig</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-3.svg" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">g<span class="op">$</span>gxi</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-10-4.svg" width="672" /></p>
 <p>Chain mixing seem quite well meaning that, whatever the starting value we use, which are actually very broad (see above), the behaviour of the generated chains are similar, in the sense that they are “reaching” in the same way the targetted stationary distribution.</p>
 <p><strong>Gelman-Rubin (Coda) Diagnostics</strong></p>
 <p>This diagnostic compares the behaviour of the several randomly initialized chains. It uses the <em>potential scal reduction statistic</em> (or <em>shrink factor</em>) <span class="math inline">\(\hat{R}\)</span> which measures now <strong>quantitatively</strong> the mixing of the chains. To do that, It measures the ratio of the average variance of samples within each chain to the variance of the pooled samples accross chains. If convergence occured, these should be the same and <span class="math inline">\(\hat{R}\)</span> will be 1. If not, this will be &gt;1.</p>
-<pre class="r"><code># Function to create mcmc.lists, useful for diagnostics on chains.
-&#39;mc.listDiag4&#39; &lt;- function (list, subset = c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)) {
-  mcmc.list(mcmc(list[[1]][, subset]),
-            mcmc(list[[2]][, subset]),
-            mcmc(list[[3]][, subset]),
-            mcmc(list[[4]][, subset])
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Function to create mcmc.lists, useful for diagnostics on chains.</span>
+<span class="st">&#39;mc.listDiag4&#39;</span> &lt;-<span class="st"> </span><span class="cf">function</span> (list, <span class="dt">subset =</span> <span class="kw">c</span>(<span class="st">&quot;mu0&quot;</span>, <span class="st">&quot;mu1&quot;</span>, <span class="st">&quot;logsig&quot;</span>, <span class="st">&quot;xi&quot;</span>)) {
+  <span class="kw">mcmc.list</span>(<span class="kw">mcmc</span>(list[[<span class="dv">1</span>]][, subset]),
+            <span class="kw">mcmc</span>(list[[<span class="dv">2</span>]][, subset]),
+            <span class="kw">mcmc</span>(list[[<span class="dv">3</span>]][, subset]),
+            <span class="kw">mcmc</span>(list[[<span class="dv">4</span>]][, subset])
   )
-}</code></pre>
-<pre class="r"><code>## Gelman Coda Diagnostics : Base plot
-Rhat &lt;- gelman.diag(mc.listDiag4(gibbs.trend$out.ind), autoburnin=F)
-gelman.plot(mc.listDiag4(gibbs.trend$out.ind), autoburnin=F, auto.layout = T)
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Gelman Coda Diagnostics : Base plot
+Rhat &lt;-<span class="st"> </span><span class="kw">gelman.diag</span>(<span class="kw">mc.listDiag4</span>(gibbs.trend<span class="op">$</span>out.ind), <span class="dt">autoburnin=</span>F)
+<span class="kw">gelman.plot</span>(<span class="kw">mc.listDiag4</span>(gibbs.trend<span class="op">$</span>out.ind), <span class="dt">autoburnin=</span>F, <span class="dt">auto.layout =</span> T)
 
 ##  In ggplot : Put all on the same y-scales
-gp.dat &lt;- gelman.plot(mc.listDiag4(gibbs.trend$out.ind), autoburnin=F)</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
-<pre class="r"><code>df = data.frame(bind_rows(as.data.frame(gp.dat[[&quot;shrink&quot;]][,,1]),
-                          as.data.frame(gp.dat[[&quot;shrink&quot;]][,,2])),
-                q = rep(dimnames(gp.dat[[&quot;shrink&quot;]])[[3]],
-                      each = nrow(gp.dat[[&quot;shrink&quot;]][,,1])),
-                last.iter = rep(gp.dat[[&quot;last.iter&quot;]], length(gp.dat)))
-library(reshape2)
-df_gg &lt;- melt(df, c(&quot;q&quot;,&quot;last.iter&quot;), value.name = &quot;shrink_factor&quot;)
-ggplot(df_gg,
-       aes(last.iter, shrink_factor, colour=q, linetype=q)) +
-  geom_hline(yintercept=1, colour=&quot;grey30&quot;, lwd=0.2) +
-  geom_line() +
-  geom_hline(yintercept = 1.1, colour = &quot;green4&quot;, linetype = &quot;dashed&quot;, size = 0.3) +
-  scale_y_continuous(breaks = c(1, 1.1, 1.5, 2, 3, 4 ),
-                     labels = c(1, 1.1, 1.5, 2, 3, 4 )) +
-  #ggtitle(&quot;Gelman Rubin dignostic : R-hat Statistic&quot;) +
-  facet_wrap(~variable,
-             labeller= labeller(.cols=function(x) gsub(&quot;V&quot;, &quot;Chain &quot;, x))) +
-  labs(x=&quot;Last Iteration in Chain&quot;, y=&quot;Shrink Factor&quot;,
-       colour=&quot;Quantile&quot;, linetype=&quot;Quantile&quot;,
-       subtitle = &quot;Gelman Rubin diagnostic : R-hat Statistic&quot;) +
-  scale_linetype_manual(values=c(2,1)) +
-  theme_piss() +
-  theme(strip.text = element_text(size=15),
-        plot.subtitle = element_text(size = 21, hjust = 0.5,
-                                     colour = &quot;#33666C&quot;, face = &quot;bold&quot;))</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-12-2.png" width="672" /></p>
+gp.dat &lt;-<span class="st"> </span><span class="kw">gelman.plot</span>(<span class="kw">mc.listDiag4</span>(gibbs.trend<span class="op">$</span>out.ind), <span class="dt">autoburnin=</span>F)</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-12-1.svg" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df =<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">bind_rows</span>(<span class="kw">as.data.frame</span>(gp.dat[[<span class="st">&quot;shrink&quot;</span>]][,,<span class="dv">1</span>]),
+                          <span class="kw">as.data.frame</span>(gp.dat[[<span class="st">&quot;shrink&quot;</span>]][,,<span class="dv">2</span>])),
+                <span class="dt">q =</span> <span class="kw">rep</span>(<span class="kw">dimnames</span>(gp.dat[[<span class="st">&quot;shrink&quot;</span>]])[[<span class="dv">3</span>]],
+                      <span class="dt">each =</span> <span class="kw">nrow</span>(gp.dat[[<span class="st">&quot;shrink&quot;</span>]][,,<span class="dv">1</span>])),
+                <span class="dt">last.iter =</span> <span class="kw">rep</span>(gp.dat[[<span class="st">&quot;last.iter&quot;</span>]], <span class="kw">length</span>(gp.dat)))
+<span class="kw">library</span>(reshape2)
+df_gg &lt;-<span class="st"> </span><span class="kw">melt</span>(df, <span class="kw">c</span>(<span class="st">&quot;q&quot;</span>,<span class="st">&quot;last.iter&quot;</span>), <span class="dt">value.name =</span> <span class="st">&quot;shrink_factor&quot;</span>)
+<span class="kw">ggplot</span>(df_gg,
+       <span class="kw">aes</span>(last.iter, shrink_factor, <span class="dt">colour=</span>q, <span class="dt">linetype=</span>q)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept=</span><span class="dv">1</span>, <span class="dt">colour=</span><span class="st">&quot;grey30&quot;</span>, <span class="dt">lwd=</span><span class="fl">0.2</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="fl">1.1</span>, <span class="dt">colour =</span> <span class="st">&quot;green4&quot;</span>, <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="dt">size =</span> <span class="fl">0.3</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="fl">1.1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span> ),
+                     <span class="dt">labels =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="fl">1.1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span> )) <span class="op">+</span>
+<span class="st">  </span><span class="co">#ggtitle(&quot;Gelman Rubin dignostic : R-hat Statistic&quot;) +</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>variable,
+             <span class="dt">labeller=</span> <span class="kw">labeller</span>(<span class="dt">.cols=</span><span class="cf">function</span>(x) <span class="kw">gsub</span>(<span class="st">&quot;V&quot;</span>, <span class="st">&quot;Chain &quot;</span>, x))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x=</span><span class="st">&quot;Last Iteration in Chain&quot;</span>, <span class="dt">y=</span><span class="st">&quot;Shrink Factor&quot;</span>,
+       <span class="dt">colour=</span><span class="st">&quot;Quantile&quot;</span>, <span class="dt">linetype=</span><span class="st">&quot;Quantile&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Gelman Rubin diagnostic : R-hat Statistic&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_linetype_manual</span>(<span class="dt">values=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">1</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">theme_piss</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">strip.text =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">15</span>),
+        <span class="dt">plot.subtitle =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">21</span>, <span class="dt">hjust =</span> <span class="fl">0.5</span>,
+                                     <span class="dt">colour =</span> <span class="st">&quot;#33666C&quot;</span>, <span class="dt">face =</span> <span class="st">&quot;bold&quot;</span>))</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-12-2.svg" width="672" /></p>
 <p><strong>(look at y scales !!!!!)</strong></p>
 <p>We can see that it is quite close to 1, for every chains and for this (‘small’) number of iterations. The common rule is to be more prudent whenever <span class="math inline">\(\hat{R}&gt;1.1\)</span>. We remark that for <span class="math inline">\(\xi\)</span>, it seems to take more iterations before reaching stationary distribution.</p>
 <p>Note that we did not make any <em>thinning</em> so far, i.e. we did not take only one simulation every <em>thin</em> number of simulations. This process is widely used in the litterature and it is useful to reduce autocorrelations through the chains. However, it has also been proven that <em>thinning</em> the chains is actually less efficient than keeping all the generated samples for inference… The greater sample size effect of no thinning is generally stronger than the autocorrelation reduce factor of thinning It could be easily implemented.</p>
 <p><strong>Markov Chain’s autocorrelations :</strong></p>
 <p>This handles correlations <strong>within a single parameter’s chain</strong>. As for cross-correlations, we are looking here for small values for good properties.</p>
-<pre class="r"><code># Transform back the scale parameter
-param.chain[, &quot;sigma&quot;] &lt;- exp(param.chain[,&quot;logsig&quot;])
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Transform back the scale parameter</span>
+param.chain[, <span class="st">&quot;sigma&quot;</span>] &lt;-<span class="st"> </span><span class="kw">exp</span>(param.chain[,<span class="st">&quot;logsig&quot;</span>])
 
 ## Markov Chain Correlations
-#autocorr(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)] ))
-#autocorr.diag(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)] ))
-autocorr.plot(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)]  ))</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<span class="co">#autocorr(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)] ))</span>
+<span class="co">#autocorr.diag(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)] ))</span>
+<span class="kw">autocorr.plot</span>(<span class="kw">mcmc</span>(param.chain[, <span class="kw">c</span>(<span class="st">&quot;mu0&quot;</span>, <span class="st">&quot;mu1&quot;</span>, <span class="st">&quot;logsig&quot;</span>, <span class="st">&quot;xi&quot;</span>)]  ))</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-13-1.svg" width="672" /></p>
 <p>We can see that the autocorrelation behaviour for the chains seem quite fine.</p>
 <p>Again, we can remark that this is a bit more “slow” for <span class="math inline">\(\xi\)</span>, as we could expect.</p>
 <p><strong>Cross-correlations : </strong></p>
 <p>This one handles the correlations <strong>accross parameter</strong></p>
-<pre class="r"><code>crosscorr.plot(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)]  ),
-                title = &quot;Cross-correlation&quot;)
-title(&quot;Cross-correlation&quot;)</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
-<pre class="r"><code># In ggplot
-library(ggcorrplot)
-ggcorrplot(crosscorr(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)])),
-           hc.order = TRUE, type = &quot;lower&quot;, lab = TRUE, title = &quot;Cross-correlation&quot;,
-           ggtheme = PissoortThesis::theme_piss)</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-14-2.png" width="672" /></p>
-<pre class="r"><code># Compare it with Fisher information matrix (&#39;frequentist&#39;) by MLE with ismev
-cr.corr_lin &lt;- crosscorr(mcmc(param.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;sigma&quot;, &quot;xi&quot;)]))
-dimnames(gev_nonstatio$cov) &lt;- dimnames(cr.corr_lin)
-# Transform it to correlation for comparison
-cov2cor(gev_nonstatio$cov)  ;    cr.corr_lin</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">crosscorr.plot</span>(<span class="kw">mcmc</span>(param.chain[, <span class="kw">c</span>(<span class="st">&quot;mu0&quot;</span>, <span class="st">&quot;mu1&quot;</span>, <span class="st">&quot;logsig&quot;</span>, <span class="st">&quot;xi&quot;</span>)]  ),
+                <span class="dt">title =</span> <span class="st">&quot;Cross-correlation&quot;</span>)
+<span class="kw">title</span>(<span class="st">&quot;Cross-correlation&quot;</span>)</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-14-1.svg" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># In ggplot</span>
+<span class="kw">library</span>(ggcorrplot)
+<span class="kw">ggcorrplot</span>(<span class="kw">crosscorr</span>(<span class="kw">mcmc</span>(param.chain[, <span class="kw">c</span>(<span class="st">&quot;mu0&quot;</span>, <span class="st">&quot;mu1&quot;</span>, <span class="st">&quot;logsig&quot;</span>, <span class="st">&quot;xi&quot;</span>)])),
+           <span class="dt">hc.order =</span> <span class="ot">TRUE</span>, <span class="dt">type =</span> <span class="st">&quot;lower&quot;</span>, <span class="dt">lab =</span> <span class="ot">TRUE</span>, <span class="dt">title =</span> <span class="st">&quot;Cross-correlation&quot;</span>,
+           <span class="dt">ggtheme =</span> PissoortThesis<span class="op">::</span>theme_piss)</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-14-2.svg" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare it with Fisher information matrix (&#39;frequentist&#39;) by MLE with ismev</span>
+cr.corr_lin &lt;-<span class="st"> </span><span class="kw">crosscorr</span>(<span class="kw">mcmc</span>(param.chain[, <span class="kw">c</span>(<span class="st">&quot;mu0&quot;</span>, <span class="st">&quot;mu1&quot;</span>, <span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;xi&quot;</span>)]))
+<span class="kw">dimnames</span>(gev_nonstatio<span class="op">$</span>cov) &lt;-<span class="st"> </span><span class="kw">dimnames</span>(cr.corr_lin)
+<span class="co"># Transform it to correlation for comparison</span>
+<span class="kw">cov2cor</span>(gev_nonstatio<span class="op">$</span>cov)  ;    cr.corr_lin</code></pre></div>
 <pre><code>##               mu0         mu1       sigma         xi
 ## mu0    1.00000000 -0.85891548  0.09903851 -0.2742867
 ## mu1   -0.85891548  1.00000000 -0.03779568  0.0927534
@@ -332,28 +375,28 @@ cov2cor(gev_nonstatio$cov)  ;    cr.corr_lin</code></pre>
 <p>Could we check how this dependence can be intuitively explained in comparison with frequentist’s GEV ?</p>
 <p><strong>Geweke Diagnostics :</strong></p>
 <p>In short, this diagnostic, for each chains, tests for equality of the first <span class="math inline">\(10\%\)</span> of a single parameter’s chain with the mean computed from the 2nd half of the chain. Large buffer between these 2 blocks are taken to assume these are probably independent. We then do a classical (frequentist..) z-score test for equality of the 2 means based on the effective sample sizes which account for autocorrelations (…)</p>
-<pre class="r"><code>geweke &lt;- geweke.diag(mcmc(param.chain))
-2*dnorm(geweke$z) </code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">geweke &lt;-<span class="st"> </span><span class="kw">geweke.diag</span>(<span class="kw">mcmc</span>(param.chain))
+<span class="dv">2</span><span class="op">*</span><span class="kw">dnorm</span>(geweke<span class="op">$</span>z) </code></pre></div>
 <pre><code>##        mu0        mu1     logsig         xi      sigma 
 ## 0.61654784 0.67187309 0.28074459 0.08308954 0.29433880</code></pre>
 <p>Now, we partitionned the first half into 20 segments of iterations,</p>
-<pre class="r"><code>geweke.plot(mcmc(param.chain), nbins = 20) </code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-16-1.png" width="576" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">geweke.plot</span>(<span class="kw">mcmc</span>(param.chain), <span class="dt">nbins =</span> <span class="dv">20</span>) </code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-16-1.svg" width="576" /></p>
 <p>Maybe a few <strong>more iterations</strong> could not be too much to convince ourself that convergence did really occur, especially again for <span class="math inline">\(\xi\)</span> for which the p-value is not far from the common level of <span class="math inline">\(5\%\)</span> .</p>
 <p><strong>Raftery and Lewis’s Diagnostics</strong></p>
 <p>This is a run length control diagnostic based on a criterion of accuracy of estimation of a quantile q. It also informs if the number of iterations is too small.</p>
 <p>For example, here for the quantile <span class="math inline">\(5\%\)</span> with a precision of 95% and an margin’s error of 2%, i.e. estimate <span class="math inline">\(q_{0.05}\pm 2\%\)</span> with <span class="math inline">\(95\%\)</span> accuracy.</p>
 <p>We did it for each chains, and here are the results, for the 4 chains separately :</p>
-<pre class="r"><code>## Raftery Coda Diagnostics
-# For each chain individually
-raf1 &lt;- raftery.diag(mc.listDiag4(gibbs.trend$out.ind)[[1]], q=0.05, r=0.02, s=0.95)
-raf2 &lt;- raftery.diag(mc.listDiag4(gibbs.trend$out.ind)[[2]], q=0.05, r=0.02, s=0.95)
-raf3 &lt;- raftery.diag(mc.listDiag4(gibbs.trend$out.ind)[[3]], q=0.05, r=0.02, s=0.95)
-raf4 &lt;- raftery.diag(mc.listDiag4(gibbs.trend$out.ind)[[4]], q=0.05, r=0.02, s=0.95)
-set.seed(12)
-raf &lt;- sample(list(raf1$resmatrix, raf2$resmatrix, raf3$resmatrix, raf4$resmatrix), 1)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Raftery Coda Diagnostics
+<span class="co"># For each chain individually</span>
+raf1 &lt;-<span class="st"> </span><span class="kw">raftery.diag</span>(<span class="kw">mc.listDiag4</span>(gibbs.trend<span class="op">$</span>out.ind)[[<span class="dv">1</span>]], <span class="dt">q=</span><span class="fl">0.05</span>, <span class="dt">r=</span><span class="fl">0.02</span>, <span class="dt">s=</span><span class="fl">0.95</span>)
+raf2 &lt;-<span class="st"> </span><span class="kw">raftery.diag</span>(<span class="kw">mc.listDiag4</span>(gibbs.trend<span class="op">$</span>out.ind)[[<span class="dv">2</span>]], <span class="dt">q=</span><span class="fl">0.05</span>, <span class="dt">r=</span><span class="fl">0.02</span>, <span class="dt">s=</span><span class="fl">0.95</span>)
+raf3 &lt;-<span class="st"> </span><span class="kw">raftery.diag</span>(<span class="kw">mc.listDiag4</span>(gibbs.trend<span class="op">$</span>out.ind)[[<span class="dv">3</span>]], <span class="dt">q=</span><span class="fl">0.05</span>, <span class="dt">r=</span><span class="fl">0.02</span>, <span class="dt">s=</span><span class="fl">0.95</span>)
+raf4 &lt;-<span class="st"> </span><span class="kw">raftery.diag</span>(<span class="kw">mc.listDiag4</span>(gibbs.trend<span class="op">$</span>out.ind)[[<span class="dv">4</span>]], <span class="dt">q=</span><span class="fl">0.05</span>, <span class="dt">r=</span><span class="fl">0.02</span>, <span class="dt">s=</span><span class="fl">0.95</span>)
+<span class="kw">set.seed</span>(<span class="dv">12</span>)
+raf &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="kw">list</span>(raf1<span class="op">$</span>resmatrix, raf2<span class="op">$</span>resmatrix, raf3<span class="op">$</span>resmatrix, raf4<span class="op">$</span>resmatrix), <span class="dv">1</span>)
 
-pander(as.data.frame(raf))</code></pre>
+<span class="kw">pander</span>(<span class="kw">as.data.frame</span>(raf))</code></pre></div>
 <table style="width:54%;">
 <colgroup>
 <col width="18%" />
@@ -402,10 +445,10 @@ pander(as.data.frame(raf))</code></pre>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># For the complete chains
-raf_tot &lt;- raftery.diag(mcmc(gibbs.trend$out.chain[, c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)]),
-                     q=0.05, r=0.02, s=0.95)
-pander(raf_tot$resmatrix)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># For the complete chains</span>
+raf_tot &lt;-<span class="st"> </span><span class="kw">raftery.diag</span>(<span class="kw">mcmc</span>(gibbs.trend<span class="op">$</span>out.chain[, <span class="kw">c</span>(<span class="st">&quot;mu0&quot;</span>, <span class="st">&quot;mu1&quot;</span>, <span class="st">&quot;logsig&quot;</span>, <span class="st">&quot;xi&quot;</span>)]),
+                     <span class="dt">q=</span><span class="fl">0.05</span>, <span class="dt">r=</span><span class="fl">0.02</span>, <span class="dt">s=</span><span class="fl">0.95</span>)
+<span class="kw">pander</span>(raf_tot<span class="op">$</span>resmatrix)</code></pre></div>
 <table style="width:54%;">
 <colgroup>
 <col width="18%" />
@@ -465,10 +508,10 @@ pander(raf_tot$resmatrix)</code></pre>
 <div id="final-results" class="section level2">
 <h2>Final Results</h2>
 <p><strong>Summary Table from the posterior :</strong></p>
-<pre class="r"><code>tab1 &lt;- as.data.frame(summary(mcmc(param.chain))$quantiles)
-#colnames(tab1) &lt;- c(&quot;$\\boldsymbol{q_{0.025}}$&quot;,&quot;$\\boldsymbol{q_{0.25}}$&quot;,&quot;Median&quot;,&quot;$\\boldsymbol{q_{0.75}}$&quot;,&quot;$\\boldsymbol{q_{0.975}}$&quot;)
-#rownames(tab1) &lt;- c(&quot;$\\mu \\ $&quot;,&quot;$\\mu_1 \\quad$&quot;, &quot;$\\sigma \\quad$&quot;, &quot;$\\xi \\quad$&quot;)
-pander(tab1,split.table = Inf)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tab1 &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">summary</span>(<span class="kw">mcmc</span>(param.chain))<span class="op">$</span>quantiles)
+<span class="co">#colnames(tab1) &lt;- c(&quot;$\\boldsymbol{q_{0.025}}$&quot;,&quot;$\\boldsymbol{q_{0.25}}$&quot;,&quot;Median&quot;,&quot;$\\boldsymbol{q_{0.75}}$&quot;,&quot;$\\boldsymbol{q_{0.975}}$&quot;)</span>
+<span class="co">#rownames(tab1) &lt;- c(&quot;$\\mu \\ $&quot;,&quot;$\\mu_1 \\quad$&quot;, &quot;$\\sigma \\quad$&quot;, &quot;$\\xi \\quad$&quot;)</span>
+<span class="kw">pander</span>(tab1,<span class="dt">split.table =</span> <span class="ot">Inf</span>)</code></pre></div>
 <table style="width:88%;">
 <colgroup>
 <col width="18%" />
@@ -533,90 +576,90 @@ pander(tab1,split.table = Inf)</code></pre>
 </table>
 <p>At first sight, we can appreciate that results seem very similar to the frequentists ones. Let’s now compare them, by taking the smaple mean value of the posterior for the Bayesian estimate.</p>
 <p>We can also represent the <strong>posterior densities</strong> to have visual insight of the posterior’s probability mass. (can smooth it)</p>
-<pre class="r"><code>## Summary And Parameter Table
-param.chain$sigma &lt;- exp(param.chain$logsig)
-tab_quantiles &lt;- as.data.frame(summary(mcmc(param.chain))$quantiles)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Summary And Parameter Table
+param.chain<span class="op">$</span>sigma &lt;-<span class="st"> </span><span class="kw">exp</span>(param.chain<span class="op">$</span>logsig)
+tab_quantiles &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">summary</span>(<span class="kw">mcmc</span>(param.chain))<span class="op">$</span>quantiles)
 
 ## HPD intervals
-library(HDInterval)
-hpd_mu0 &lt;- hdi(param.chain$mu0)
-hpd_mu1 &lt;- hdi(param.chain$mu1)
-hpd_logsigma &lt;- hdi(param.chain$logsig)
-hpd_xi &lt;- hdi(param.chain$xi)
-hpd_sigma &lt;- hdi(param.chain$sigma)
-hpd95 &lt;- data.frame(mu0 = c(hpd_mu0), mu1 = c(hpd_mu1),
-                    logsig = c(hpd_logsigma),
-                    xi = c(hpd_xi), sig = c(hpd_sigma))
+<span class="kw">library</span>(HDInterval)
+hpd_mu0 &lt;-<span class="st"> </span><span class="kw">hdi</span>(param.chain<span class="op">$</span>mu0)
+hpd_mu1 &lt;-<span class="st"> </span><span class="kw">hdi</span>(param.chain<span class="op">$</span>mu1)
+hpd_logsigma &lt;-<span class="st"> </span><span class="kw">hdi</span>(param.chain<span class="op">$</span>logsig)
+hpd_xi &lt;-<span class="st"> </span><span class="kw">hdi</span>(param.chain<span class="op">$</span>xi)
+hpd_sigma &lt;-<span class="st"> </span><span class="kw">hdi</span>(param.chain<span class="op">$</span>sigma)
+hpd95 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">mu0 =</span> <span class="kw">c</span>(hpd_mu0), <span class="dt">mu1 =</span> <span class="kw">c</span>(hpd_mu1),
+                    <span class="dt">logsig =</span> <span class="kw">c</span>(hpd_logsigma),
+                    <span class="dt">xi =</span> <span class="kw">c</span>(hpd_xi), <span class="dt">sig =</span> <span class="kw">c</span>(hpd_sigma))
 
 
-library(gridExtra)
+<span class="kw">library</span>(gridExtra)
 
 ## Densities of the parameters with their quantile-based and  HPD 0.95 intervals
-color_scheme_set(&quot;brightblue&quot;)
-col.intervals &lt;- c(&quot;Quantile&quot; = &quot;red&quot;, &quot;HPD&quot; = &quot;green&quot;)
+<span class="kw">color_scheme_set</span>(<span class="st">&quot;brightblue&quot;</span>)
+col.intervals &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Quantile&quot;</span> =<span class="st"> &quot;red&quot;</span>, <span class="st">&quot;HPD&quot;</span> =<span class="st"> &quot;green&quot;</span>)
 
-&#39;legend.things&#39;  &lt;-
-  list(scale_color_manual(name = &quot;Intervals&quot;, values = col.intervals),
-    theme_piss(legend.position = c(0.92, 0.5)),
-    theme(legend.background = element_rect(colour = &quot;transparent&quot;,size = 0.5))
+<span class="st">&#39;legend.things&#39;</span>  &lt;-
+<span class="st">  </span><span class="kw">list</span>(<span class="kw">scale_color_manual</span>(<span class="dt">name =</span> <span class="st">&quot;Intervals&quot;</span>, <span class="dt">values =</span> col.intervals),
+    <span class="kw">theme_piss</span>(<span class="dt">legend.position =</span> <span class="kw">c</span>(<span class="fl">0.92</span>, <span class="fl">0.5</span>)),
+    <span class="kw">theme</span>(<span class="dt">legend.background =</span> <span class="kw">element_rect</span>(<span class="dt">colour =</span> <span class="st">&quot;transparent&quot;</span>,<span class="dt">size =</span> <span class="fl">0.5</span>))
    )
 
-g1 &lt;- mcmc_dens(param.chain, pars = c(&quot;mu0&quot;)) +
-  geom_vline(aes(xintercept = tab_quantiles[&#39;mu0&#39;, &quot;2.5%&quot;],
-             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = tab_quantiles[&#39;mu0&#39;, &quot;97.5%&quot;],
-             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = hpd_mu0[[1]],
-             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = hpd_mu0[[2]],
-             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
-  legend.things
-g2 &lt;- mcmc_dens(param.chain, pars = c(&quot;logsig&quot;)) +
-  geom_vline(aes(xintercept = tab_quantiles[&#39;logsig&#39;, &quot;2.5%&quot;],
-             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = tab_quantiles[&#39;logsig&#39;, &quot;97.5%&quot;],
-             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = hpd_logsigma[[1]],
-             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = hpd_logsigma[[2]],
-             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
-  legend.things
-g3 &lt;- mcmc_dens(param.chain, pars = c(&quot;xi&quot;))+
-  geom_vline(aes(xintercept = tab_quantiles[&#39;xi&#39;, &#39;2.5%&#39;],
-             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = tab_quantiles[&#39;xi&#39;, &quot;97.5%&quot;],
-             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = hpd_xi[[1]],
-             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = hpd_xi[[2]],
-             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;)+
-  legend.things
-g4 &lt;- mcmc_dens(param.chain, pars = c(&quot;mu1&quot;)) +
-  geom_vline(aes(xintercept = tab_quantiles[&#39;mu1&#39;, &#39;2.5%&#39;],
-             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = tab_quantiles[&#39;mu1&#39;, &quot;97.5%&quot;],
-             col = &quot;Quantile&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = hpd_mu1[[1]],
-             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(aes(xintercept = hpd_mu1[[2]],
-             col = &quot;HPD&quot;), linetype = &quot;dashed&quot;) +
-  legend.things
+g1 &lt;-<span class="st"> </span><span class="kw">mcmc_dens</span>(param.chain, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;mu0&quot;</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> tab_quantiles[<span class="st">&#39;mu0&#39;</span>, <span class="st">&quot;2.5%&quot;</span>],
+             <span class="dt">col =</span> <span class="st">&quot;Quantile&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> tab_quantiles[<span class="st">&#39;mu0&#39;</span>, <span class="st">&quot;97.5%&quot;</span>],
+             <span class="dt">col =</span> <span class="st">&quot;Quantile&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> hpd_mu0[[<span class="dv">1</span>]],
+             <span class="dt">col =</span> <span class="st">&quot;HPD&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> hpd_mu0[[<span class="dv">2</span>]],
+             <span class="dt">col =</span> <span class="st">&quot;HPD&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span>legend.things
+g2 &lt;-<span class="st"> </span><span class="kw">mcmc_dens</span>(param.chain, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;logsig&quot;</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> tab_quantiles[<span class="st">&#39;logsig&#39;</span>, <span class="st">&quot;2.5%&quot;</span>],
+             <span class="dt">col =</span> <span class="st">&quot;Quantile&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> tab_quantiles[<span class="st">&#39;logsig&#39;</span>, <span class="st">&quot;97.5%&quot;</span>],
+             <span class="dt">col =</span> <span class="st">&quot;Quantile&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> hpd_logsigma[[<span class="dv">1</span>]],
+             <span class="dt">col =</span> <span class="st">&quot;HPD&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> hpd_logsigma[[<span class="dv">2</span>]],
+             <span class="dt">col =</span> <span class="st">&quot;HPD&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span>legend.things
+g3 &lt;-<span class="st"> </span><span class="kw">mcmc_dens</span>(param.chain, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;xi&quot;</span>))<span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> tab_quantiles[<span class="st">&#39;xi&#39;</span>, <span class="st">&#39;2.5%&#39;</span>],
+             <span class="dt">col =</span> <span class="st">&quot;Quantile&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> tab_quantiles[<span class="st">&#39;xi&#39;</span>, <span class="st">&quot;97.5%&quot;</span>],
+             <span class="dt">col =</span> <span class="st">&quot;Quantile&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> hpd_xi[[<span class="dv">1</span>]],
+             <span class="dt">col =</span> <span class="st">&quot;HPD&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> hpd_xi[[<span class="dv">2</span>]],
+             <span class="dt">col =</span> <span class="st">&quot;HPD&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>)<span class="op">+</span>
+<span class="st">  </span>legend.things
+g4 &lt;-<span class="st"> </span><span class="kw">mcmc_dens</span>(param.chain, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;mu1&quot;</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> tab_quantiles[<span class="st">&#39;mu1&#39;</span>, <span class="st">&#39;2.5%&#39;</span>],
+             <span class="dt">col =</span> <span class="st">&quot;Quantile&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> tab_quantiles[<span class="st">&#39;mu1&#39;</span>, <span class="st">&quot;97.5%&quot;</span>],
+             <span class="dt">col =</span> <span class="st">&quot;Quantile&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> hpd_mu1[[<span class="dv">1</span>]],
+             <span class="dt">col =</span> <span class="st">&quot;HPD&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> hpd_mu1[[<span class="dv">2</span>]],
+             <span class="dt">col =</span> <span class="st">&quot;HPD&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span>legend.things
 
-title &lt;- &quot;Posterior densities of the parameters and Bayesian intervals&quot;
-grid.arrange( g1, g4, g2, g3, nrow = 2,
-              top = grid::textGrob(title,
-                                   gp = grid::gpar(col = &quot;#33666C&quot;,
-                                                   fontsize = 20,
-                                                   font = 4), vjust = 0.4))</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-19-1.png" width="816" /></p>
+title &lt;-<span class="st"> &quot;Posterior densities of the parameters and Bayesian intervals&quot;</span>
+<span class="kw">grid.arrange</span>( g1, g4, g2, g3, <span class="dt">nrow =</span> <span class="dv">2</span>,
+              <span class="dt">top =</span> grid<span class="op">::</span><span class="kw">textGrob</span>(title,
+                                   <span class="dt">gp =</span> grid<span class="op">::</span><span class="kw">gpar</span>(<span class="dt">col =</span> <span class="st">&quot;#33666C&quot;</span>,
+                                                   <span class="dt">fontsize =</span> <span class="dv">20</span>,
+                                                   <span class="dt">font =</span> <span class="dv">4</span>), <span class="dt">vjust =</span> <span class="fl">0.4</span>))</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-19-1.svg" width="816" /></p>
 <p><strong>Comparisons with Frequentist’s results (GEV) :</strong></p>
-<pre class="r"><code>par_gibbs_trend &lt;- apply(gibbs.trend$out.chain[,c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;logsig&quot;, &quot;xi&quot;)],
-                         2, mean) # Average over the (3) generated chains
-par_gibbs_trend[&quot;sigma&quot;] &lt;- exp(par_gibbs_trend[&quot;logsig&quot;] ) 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">par_gibbs_trend &lt;-<span class="st"> </span><span class="kw">apply</span>(gibbs.trend<span class="op">$</span>out.chain[,<span class="kw">c</span>(<span class="st">&quot;mu0&quot;</span>, <span class="st">&quot;mu1&quot;</span>, <span class="st">&quot;logsig&quot;</span>, <span class="st">&quot;xi&quot;</span>)],
+                         <span class="dv">2</span>, mean) <span class="co"># Average over the (3) generated chains</span>
+par_gibbs_trend[<span class="st">&quot;sigma&quot;</span>] &lt;-<span class="st"> </span><span class="kw">exp</span>(par_gibbs_trend[<span class="st">&quot;logsig&quot;</span>] ) 
 
-frame &lt;- data.frame(Bayesian = par_gibbs_trend[c(&quot;mu0&quot;, &quot;mu1&quot;, &quot;sigma&quot;, &quot;xi&quot;)], &#39;Frequentist(mle)&#39; = gev_nonstatio$mle)
-row.names(frame) = c(&quot;$\\mu \\ $&quot;,&quot;$\\underline{\\mu_1} \\quad$&quot;, &quot;$\\sigma \\quad$&quot;, &quot;$\\xi \\quad$&quot;)
-knitr::kable(frame, align = &#39;l&#39;)</code></pre>
+frame &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">Bayesian =</span> par_gibbs_trend[<span class="kw">c</span>(<span class="st">&quot;mu0&quot;</span>, <span class="st">&quot;mu1&quot;</span>, <span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;xi&quot;</span>)], <span class="st">&#39;Frequentist(mle)&#39;</span> =<span class="st"> </span>gev_nonstatio<span class="op">$</span>mle)
+<span class="kw">row.names</span>(frame) =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;$</span><span class="ch">\\</span><span class="st">mu </span><span class="ch">\\</span><span class="st"> $&quot;</span>,<span class="st">&quot;$</span><span class="ch">\\</span><span class="st">underline{</span><span class="ch">\\</span><span class="st">mu_1} </span><span class="ch">\\</span><span class="st">quad$&quot;</span>, <span class="st">&quot;$</span><span class="ch">\\</span><span class="st">sigma </span><span class="ch">\\</span><span class="st">quad$&quot;</span>, <span class="st">&quot;$</span><span class="ch">\\</span><span class="st">xi </span><span class="ch">\\</span><span class="st">quad$&quot;</span>)
+knitr<span class="op">::</span><span class="kw">kable</span>(frame, <span class="dt">align =</span> <span class="st">&#39;l&#39;</span>)</code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -661,157 +704,157 @@ knitr::kable(frame, align = &#39;l&#39;)</code></pre>
     = &amp; \ \mathbb{E}_{\theta|\boldsymbol{x}}\big[\Pr(\tilde{X}&lt;x \ | \ \theta)\big].
     \end{aligned}\]</span></p>
 <p>To obtain this, we will estimate it by generating samples from the posterior ditribution to form the PPD.</p>
-<pre class="r"><code># See the function to generate predictive posterior samples
-repl &lt;- PissoortThesis::pred_post_samples()
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># See the function to generate predictive posterior samples</span>
+repl &lt;-<span class="st"> </span>PissoortThesis<span class="op">::</span><span class="kw">pred_post_samples</span>()
 
-post.pred &lt;- apply(repl, 2, function(x) quantile(x, probs = c(0.05,0.5,0.95)))
+post.pred &lt;-<span class="st"> </span><span class="kw">apply</span>(repl, <span class="dv">2</span>, <span class="cf">function</span>(x) <span class="kw">quantile</span>(x, <span class="dt">probs =</span> <span class="kw">c</span>(<span class="fl">0.05</span>,<span class="fl">0.5</span>,<span class="fl">0.95</span>)))
 
 
-df.postpred &lt;- data.frame(data = max_years$data, q05 = post.pred[&quot;5%&quot;,],
-                          q50 = post.pred[&quot;50%&quot;,], q95 = post.pred[&quot;95%&quot;,],
-                          year = seq(1901:2016))
-ggplot(df.postpred) + geom_point(aes(x = year, y = data)) +
-  geom_line(aes(x = year, y = q05)) + geom_line(aes(x = year, y = q50)) +
-  geom_line(aes(x = year, y = q95)) +
-  ggtitle(&quot;Original data with PPD quantiles 5, 50 and 95%&quot;) + theme_piss()</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+df.postpred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">data =</span> max_years<span class="op">$</span>data, <span class="dt">q05 =</span> post.pred[<span class="st">&quot;5%&quot;</span>,],
+                          <span class="dt">q50 =</span> post.pred[<span class="st">&quot;50%&quot;</span>,], <span class="dt">q95 =</span> post.pred[<span class="st">&quot;95%&quot;</span>,],
+                          <span class="dt">year =</span> <span class="kw">seq</span>(<span class="dv">1901</span><span class="op">:</span><span class="dv">2016</span>))
+<span class="kw">ggplot</span>(df.postpred) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> data)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> q05)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> q50)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> q95)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Original data with PPD quantiles 5, 50 and 95%&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">theme_piss</span>()</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-21-1.svg" width="672" /></p>
 <p>To compute this PPD from , we expressly took a range of <span class="math inline">\(116\)</span> years in the future, as we know that it is not recommended to make very long-term extrapolations. We first depict the results in Figure where we represent the PPD by its <span class="math inline">\(95\%\)</span> credible intervals, together with the observed values from <span class="math inline">\(1901\)</span> to <span class="math inline">\(2016\)</span> and the values from <span class="math inline">\(2016\)</span> to <span class="math inline">\(2131\)</span> that have been simulated from this PPD .</p>
-<pre class="r"><code>n_future &lt;- 116
-repl2 &lt;- PissoortThesis::pred_post_samples(n_future = n_future, seed = 12)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n_future &lt;-<span class="st"> </span><span class="dv">116</span>
+repl2 &lt;-<span class="st"> </span>PissoortThesis<span class="op">::</span><span class="kw">pred_post_samples</span>(<span class="dt">n_future =</span> n_future, <span class="dt">seed =</span> <span class="dv">12</span>)
 
-post.pred2 &lt;- apply(repl2, 2, function(x) quantile(x, probs = c(0.025,0.5,0.975)))
-hpd_pred &lt;- as.data.frame(t(hdi(repl2)))
+post.pred2 &lt;-<span class="st"> </span><span class="kw">apply</span>(repl2, <span class="dv">2</span>, <span class="cf">function</span>(x) <span class="kw">quantile</span>(x, <span class="dt">probs =</span> <span class="kw">c</span>(<span class="fl">0.025</span>,<span class="fl">0.5</span>,<span class="fl">0.975</span>)))
+hpd_pred &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">t</span>(<span class="kw">hdi</span>(repl2)))
 
-df.postpred2 &lt;- data.frame(org.data = c(max_years$data,
-                                        repl2[sample(10, 1:nrow(repl2)),
-                                              117:(116+n_future)] ),
-                           q025 = post.pred2[&quot;2.5%&quot;,], q50 = post.pred2[&quot;50%&quot;,],
-                           q975 = post.pred2[&quot;97.5%&quot;,], year = 1901:(2016+n_future),
-                           &#39;data&#39; = c(rep(&#39;original&#39;, 116), rep(&#39;new&#39;, n_future)),
-                           hpd.low = hpd_pred$lower, hpd.up = hpd_pred$upper)
+df.postpred2 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">org.data =</span> <span class="kw">c</span>(max_years<span class="op">$</span>data,
+                                        repl2[<span class="kw">sample</span>(<span class="dv">10</span>, <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(repl2)),
+                                              <span class="dv">117</span><span class="op">:</span>(<span class="dv">116</span><span class="op">+</span>n_future)] ),
+                           <span class="dt">q025 =</span> post.pred2[<span class="st">&quot;2.5%&quot;</span>,], <span class="dt">q50 =</span> post.pred2[<span class="st">&quot;50%&quot;</span>,],
+                           <span class="dt">q975 =</span> post.pred2[<span class="st">&quot;97.5%&quot;</span>,], <span class="dt">year =</span> <span class="dv">1901</span><span class="op">:</span>(<span class="dv">2016</span><span class="op">+</span>n_future),
+                           <span class="st">&#39;data&#39;</span> =<span class="st"> </span><span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">&#39;original&#39;</span>, <span class="dv">116</span>), <span class="kw">rep</span>(<span class="st">&#39;new&#39;</span>, n_future)),
+                           <span class="dt">hpd.low =</span> hpd_pred<span class="op">$</span>lower, <span class="dt">hpd.up =</span> hpd_pred<span class="op">$</span>upper)
 
-col.interval &lt;- c(&quot;2.5%-97.5%&quot; = &quot;red&quot;, &quot;Median&quot; = &quot;blue2&quot;, &quot;HPD 95%&quot; = &quot;green2&quot;,
-                  &quot;orange&quot;, &quot;magenta&quot;)
-col.data &lt;- c(&quot;original&quot; = &quot;cyan&quot;, &quot;simulated&quot; = &quot;red&quot;, &quot;orange&quot;, &quot;magenta&quot;)
+col.interval &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;2.5%-97.5%&quot;</span> =<span class="st"> &quot;red&quot;</span>, <span class="st">&quot;Median&quot;</span> =<span class="st"> &quot;blue2&quot;</span>, <span class="st">&quot;HPD 95%&quot;</span> =<span class="st"> &quot;green2&quot;</span>,
+                  <span class="st">&quot;orange&quot;</span>, <span class="st">&quot;magenta&quot;</span>)
+col.data &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;original&quot;</span> =<span class="st"> &quot;cyan&quot;</span>, <span class="st">&quot;simulated&quot;</span> =<span class="st"> &quot;red&quot;</span>, <span class="st">&quot;orange&quot;</span>, <span class="st">&quot;magenta&quot;</span>)
 
-g.ppd &lt;- ggplot(df.postpred2) +
-  geom_line(aes(x = year, y = q025, col = &quot;2.5%-97.5%&quot;), linetype = &quot;dashed&quot;) +
-  geom_line(aes(x = year, y = q50, col = &quot;Median&quot;)) +
-  geom_line(aes(x = year, y = q975, col =  &quot;2.5%-97.5%&quot;), linetype = &quot;dashed&quot;) +
-  geom_line(aes(x = year, y = hpd.low, col = &quot;HPD 95%&quot;), linetype = &quot;dashed&quot;) +
-  geom_line(aes(x = year, y = hpd.up , col =  &quot;HPD 95%&quot;), linetype = &quot;dashed&quot;) +
-  geom_vline(xintercept = 2016, linetype = &quot;dashed&quot;, size = 0.4, col  = 1) +
-  scale_x_continuous(breaks = c(1900, 1950, 2000, 2016, 2050, 2100, 2131),
-                     labels = c(1900, 1950, 2000, 2016, 2050, 2100, 2131) ) +
-  scale_colour_manual(name = &quot; PP intervals&quot;, values = col.interval) +
-  geom_point(data = df.postpred2[1:116,],
-             aes(x = year, y = org.data), col = &quot;black&quot; ) +
-  geom_point(data = df.postpred2[117:nrow(df.postpred2),],
-             aes(x = year, y = org.data), col = &quot;orange&quot; ) +
-  scale_fill_discrete(name = &quot;Data&quot; ) + #, values = col.data) +
-  labs(y = expression( Max~(T~degree*C)), x = &quot;Year&quot;,
-       title = &quot;Posterior Predictive quantiles with observation + 116 years simulations&quot;) +
-  theme(legend.position =  c(0.91, 0.12),
-        plot.title = element_text(size = 28, colour = &quot;#33666C&quot;,
-                                  face=&quot;bold&quot;, hjust = 0.5),
-        axis.title = element_text(size = 19, colour = &quot;#33666C&quot;, face=&quot;bold&quot;),
-        legend.title = element_text(size = 19, colour = &quot;#33666C&quot;,face=&quot;bold&quot;) )
+g.ppd &lt;-<span class="st"> </span><span class="kw">ggplot</span>(df.postpred2) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> q025, <span class="dt">col =</span> <span class="st">&quot;2.5%-97.5%&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> q50, <span class="dt">col =</span> <span class="st">&quot;Median&quot;</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> q975, <span class="dt">col =</span>  <span class="st">&quot;2.5%-97.5%&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> hpd.low, <span class="dt">col =</span> <span class="st">&quot;HPD 95%&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> hpd.up , <span class="dt">col =</span>  <span class="st">&quot;HPD 95%&quot;</span>), <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">2016</span>, <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="dt">size =</span> <span class="fl">0.4</span>, <span class="dt">col  =</span> <span class="dv">1</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">1900</span>, <span class="dv">1950</span>, <span class="dv">2000</span>, <span class="dv">2016</span>, <span class="dv">2050</span>, <span class="dv">2100</span>, <span class="dv">2131</span>),
+                     <span class="dt">labels =</span> <span class="kw">c</span>(<span class="dv">1900</span>, <span class="dv">1950</span>, <span class="dv">2000</span>, <span class="dv">2016</span>, <span class="dv">2050</span>, <span class="dv">2100</span>, <span class="dv">2131</span>) ) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_colour_manual</span>(<span class="dt">name =</span> <span class="st">&quot; PP intervals&quot;</span>, <span class="dt">values =</span> col.interval) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> df.postpred2[<span class="dv">1</span><span class="op">:</span><span class="dv">116</span>,],
+             <span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> org.data), <span class="dt">col =</span> <span class="st">&quot;black&quot;</span> ) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> df.postpred2[<span class="dv">117</span><span class="op">:</span><span class="kw">nrow</span>(df.postpred2),],
+             <span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> org.data), <span class="dt">col =</span> <span class="st">&quot;orange&quot;</span> ) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_discrete</span>(<span class="dt">name =</span> <span class="st">&quot;Data&quot;</span> ) <span class="op">+</span><span class="st"> </span><span class="co">#, values = col.data) +</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">y =</span> <span class="kw">expression</span>( Max<span class="op">~</span>(T<span class="op">~</span>degree<span class="op">*</span>C)), <span class="dt">x =</span> <span class="st">&quot;Year&quot;</span>,
+       <span class="dt">title =</span> <span class="st">&quot;Posterior Predictive quantiles with observation + 116 years simulations&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span>  <span class="kw">c</span>(<span class="fl">0.91</span>, <span class="fl">0.12</span>),
+        <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">28</span>, <span class="dt">colour =</span> <span class="st">&quot;#33666C&quot;</span>,
+                                  <span class="dt">face=</span><span class="st">&quot;bold&quot;</span>, <span class="dt">hjust =</span> <span class="fl">0.5</span>),
+        <span class="dt">axis.title =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">19</span>, <span class="dt">colour =</span> <span class="st">&quot;#33666C&quot;</span>, <span class="dt">face=</span><span class="st">&quot;bold&quot;</span>),
+        <span class="dt">legend.title =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">19</span>, <span class="dt">colour =</span> <span class="st">&quot;#33666C&quot;</span>,<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>) )
 
 ## LEngth of the intervals
-length.quantil &lt;- df.postpred2$q975 - df.postpred2$q025
-length.hpd &lt;- df.postpred2$hpd.up - df.postpred2$hpd.low
-df.length.ci &lt;- data.frame(quantiles = length.quantil,
-                           hpd = length.hpd,
-                           Year = df.postpred2$year)
+length.quantil &lt;-<span class="st"> </span>df.postpred2<span class="op">$</span>q975 <span class="op">-</span><span class="st"> </span>df.postpred2<span class="op">$</span>q025
+length.hpd &lt;-<span class="st"> </span>df.postpred2<span class="op">$</span>hpd.up <span class="op">-</span><span class="st"> </span>df.postpred2<span class="op">$</span>hpd.low
+df.length.ci &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">quantiles =</span> length.quantil,
+                           <span class="dt">hpd =</span> length.hpd,
+                           <span class="dt">Year =</span> df.postpred2<span class="op">$</span>year)
 
-g.length &lt;- ggplot(df.length.ci) +
-  geom_line(aes(x = Year , y = quantiles), col = &quot;red&quot;) +
-  geom_line(aes(x = Year , y = hpd), col = &quot;green2&quot;) +
-  labs(title = &quot;Intervals&#39; lengths&quot;, y = &quot;Length&quot;) +
-  scale_x_continuous(breaks = c(1900, 1950, 2000, 2050, 2100, 2131),
-                     labels = c(1900, 1950, 2000, 2050, 2100, 2131) ) +
-  geom_vline(xintercept = 2016, linetype = &quot;dashed&quot;, size = 0.4, col  = 1) +
-  theme(plot.title = element_text(size = 17, colour = &quot;#33666C&quot;,
-                                  face=&quot;bold&quot;, hjust = 0.5),
-        axis.title = element_text(size = 10, colour = &quot;#33666C&quot;, face=&quot;bold&quot;))
+g.length &lt;-<span class="st"> </span><span class="kw">ggplot</span>(df.length.ci) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Year , <span class="dt">y =</span> quantiles), <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Year , <span class="dt">y =</span> hpd), <span class="dt">col =</span> <span class="st">&quot;green2&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Intervals&#39; lengths&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Length&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">1900</span>, <span class="dv">1950</span>, <span class="dv">2000</span>, <span class="dv">2050</span>, <span class="dv">2100</span>, <span class="dv">2131</span>),
+                     <span class="dt">labels =</span> <span class="kw">c</span>(<span class="dv">1900</span>, <span class="dv">1950</span>, <span class="dv">2000</span>, <span class="dv">2050</span>, <span class="dv">2100</span>, <span class="dv">2131</span>) ) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">2016</span>, <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="dt">size =</span> <span class="fl">0.4</span>, <span class="dt">col  =</span> <span class="dv">1</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">17</span>, <span class="dt">colour =</span> <span class="st">&quot;#33666C&quot;</span>,
+                                  <span class="dt">face=</span><span class="st">&quot;bold&quot;</span>, <span class="dt">hjust =</span> <span class="fl">0.5</span>),
+        <span class="dt">axis.title =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">10</span>, <span class="dt">colour =</span> <span class="st">&quot;#33666C&quot;</span>, <span class="dt">face=</span><span class="st">&quot;bold&quot;</span>))
 
-vp &lt;- grid::viewport(width = 0.23,
-                    height = 0.28,
-                    x = 0.65,
-                    y = 0.23)
+vp &lt;-<span class="st"> </span>grid<span class="op">::</span><span class="kw">viewport</span>(<span class="dt">width =</span> <span class="fl">0.23</span>,
+                    <span class="dt">height =</span> <span class="fl">0.28</span>,
+                    <span class="dt">x =</span> <span class="fl">0.65</span>,
+                    <span class="dt">y =</span> <span class="fl">0.23</span>)
 g.ppd
-print(g.length, vp = vp)</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-22-1.png" width="864" /></p>
+<span class="kw">print</span>(g.length, <span class="dt">vp =</span> vp)</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-22-1.svg" width="864" /></p>
 <p>We see in Figure the linear trend from the linear model on the location parameter of the posterior distribution. Indeed, we see from the above equation the contribution of the posterior <span class="math inline">\(\pi(\theta|\boldsymbol{x})\)</span> to the PPD. This Figure also clearly highlights that the PP intervals are not <span class="math inline">\(95\%\)</span> credible intervals for the observed values but rather intervals for the posterior predicted values. Indeed, coverage analysis shows that the PP intervals cover <span class="math inline">\(95\%\)</span> of the simulated values from the PPD as the number of simulations becomes very high, but only <span class="math inline">\(\approx 50\%\)</span> for the observed values. The HPD and the quantile-based credible intervals are very similar, for all the observations or simulations. However, we can see that these intervals are taking the uncertainty of predicting the future into account as they exponentially increase beyond the range of data. In fact, the evolution of the PP quantiles is linear when in the range of data, and so is the PP median even beyond the range of the data. But, in extrapolation, the PP upper quantiles will have an increasing slope over time while the PP lower quantiles will have a decreasing slope.</p>
 <p>To better understand the PPD with a global view and in order to obtain a more convenient visual quantification of the predictive uncertainty over time, we present the following Figure :</p>
-<pre class="r"><code>library(ggjoy)
-library(viridis)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggjoy)
+<span class="kw">library</span>(viridis)
 ## Provide better visualizatons with geom_joy(). ( include it in the package !!!)
 ## Definition of parameters is straightfoward : it defines time at which we predict
-# An by = is the number of densities we want to draw !
-&#39;posterior_pred_ggplot&#39; &lt;- function(from = 1, until = nrow(max_years$df),
-                                    n_future = 0, by = 10, x_coord = c(27,35)) {
+<span class="co"># An by = is the number of densities we want to draw !</span>
+<span class="st">&#39;posterior_pred_ggplot&#39;</span> &lt;-<span class="st"> </span><span class="cf">function</span>(<span class="dt">from =</span> <span class="dv">1</span>, <span class="dt">until =</span> <span class="kw">nrow</span>(max_years<span class="op">$</span>df),
+                                    <span class="dt">n_future =</span> <span class="dv">0</span>, <span class="dt">by =</span> <span class="dv">10</span>, <span class="dt">x_coord =</span> <span class="kw">c</span>(<span class="dv">27</span>,<span class="dv">35</span>)) {
 
-  repl2 &lt;- PissoortThesis::pred_post_samples(from = from, until = until,
-                                             n_future = n_future)
+  repl2 &lt;-<span class="st"> </span>PissoortThesis<span class="op">::</span><span class="kw">pred_post_samples</span>(<span class="dt">from =</span> from, <span class="dt">until =</span> until,
+                                             <span class="dt">n_future =</span> n_future)
 
-  repl2_df &lt;- data.frame(repl2)
-  colnames(repl2_df) &lt;- seq(from + 1900, length = ncol(repl2))
+  repl2_df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(repl2)
+  <span class="kw">colnames</span>(repl2_df) &lt;-<span class="st"> </span><span class="kw">seq</span>(from <span class="op">+</span><span class="st"> </span><span class="dv">1900</span>, <span class="dt">length =</span> <span class="kw">ncol</span>(repl2))
 
   ## Compute some quantiles to later draw on the plot
-  quantiles_repl2 &lt;- apply(repl2_df, 2,
-                           function(x) quantile(x , probs = c(.025, 0.05,
-                                                              0.5, 0.95, 0.975)) )
-  quantiles_repl2 &lt;- as.data.frame(t(quantiles_repl2))
-  quantiles_repl2$year &lt;- colnames(repl2_df)
+  quantiles_repl2 &lt;-<span class="st"> </span><span class="kw">apply</span>(repl2_df, <span class="dv">2</span>,
+                           <span class="cf">function</span>(x) <span class="kw">quantile</span>(x , <span class="dt">probs =</span> <span class="kw">c</span>(.<span class="dv">025</span>, <span class="fl">0.05</span>,
+                                                              <span class="fl">0.5</span>, <span class="fl">0.95</span>, <span class="fl">0.975</span>)) )
+  quantiles_repl2 &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">t</span>(quantiles_repl2))
+  quantiles_repl2<span class="op">$</span>year &lt;-<span class="st"> </span><span class="kw">colnames</span>(repl2_df)
 
-  repl2_df_gg &lt;- repl2_df[, seq(1, (until + n_future) - from, by = by)] %&gt;%
-    gather(year, value)
+  repl2_df_gg &lt;-<span class="st"> </span>repl2_df[, <span class="kw">seq</span>(<span class="dv">1</span>, (until <span class="op">+</span><span class="st"> </span>n_future) <span class="op">-</span><span class="st"> </span>from, <span class="dt">by =</span> by)] <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">gather</span>(year, value)
 
-  col.quantiles &lt;- c(&quot;2.5%-97.5%&quot; = &quot;red&quot;, &quot;Median&quot; = &quot;black&quot;, &quot;HPD 95%&quot; = &quot;green2&quot;)
+  col.quantiles &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;2.5%-97.5%&quot;</span> =<span class="st"> &quot;red&quot;</span>, <span class="st">&quot;Median&quot;</span> =<span class="st"> &quot;black&quot;</span>, <span class="st">&quot;HPD 95%&quot;</span> =<span class="st"> &quot;green2&quot;</span>)
 
-  last_year &lt;- as.character((until + n_future) - from + 1900)
-  titl &lt;- paste(&quot;Posterior Predictive densities evolution in [ 1901 -&quot;, last_year,&quot;] with linear model on location&quot;)
-  subtitl &lt;- paste(&quot;with some quantiles and intervals. The last density is in year &quot;, last_year, &quot;. After 2016 is extrapolation.&quot;)
+  last_year &lt;-<span class="st"> </span><span class="kw">as.character</span>((until <span class="op">+</span><span class="st"> </span>n_future) <span class="op">-</span><span class="st"> </span>from <span class="op">+</span><span class="st"> </span><span class="dv">1900</span>)
+  titl &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="st">&quot;Posterior Predictive densities evolution in [ 1901 -&quot;</span>, last_year,<span class="st">&quot;] with linear model on location&quot;</span>)
+  subtitl &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="st">&quot;with some quantiles and intervals. The last density is in year &quot;</span>, last_year, <span class="st">&quot;. After 2016 is extrapolation.&quot;</span>)
 
-  #browser()
+  <span class="co">#browser()</span>
   ## Compute the HPD intervals
-  hpd_pred &lt;- as.data.frame(t(hdi(repl2)))
-  hpd_pred$year &lt;- colnames(repl2_df)
+  hpd_pred &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">t</span>(<span class="kw">hdi</span>(repl2)))
+  hpd_pred<span class="op">$</span>year &lt;-<span class="st"> </span><span class="kw">colnames</span>(repl2_df)
 
-  g &lt;- ggplot(repl2_df_gg, aes(x = value, y = as.numeric(year) )) +  # %&gt;%rev() inside aes()
-    geom_joy(aes(fill = year)) +
-    geom_point(aes(x = `2.5%`, y = as.numeric(year), col = &quot;2.5%-97.5%&quot;),
-               data = quantiles_repl2, size = 0.9) +
-    geom_point(aes(x = `50%`, y = as.numeric(year), col = &quot;Median&quot;),
-               data = quantiles_repl2, size = 0.9) +
-    geom_point(aes(x = `97.5%`, y = as.numeric(year), col = &quot;2.5%-97.5%&quot;),
-               data = quantiles_repl2, size = 0.9) +
-    geom_point(aes(x = lower, y = as.numeric(year) , col = &quot;HPD 95%&quot;),
-               data = hpd_pred, size = 0.9) +
-    geom_point(aes(x = upper, y = as.numeric(year) , col = &quot;HPD 95%&quot;),
-               data = hpd_pred, size = 0.9) +
-    geom_hline(yintercept = 2016, linetype = &quot;dashed&quot;, size = 0.3, col  = 1) +
-    scale_fill_viridis(discrete = T, option = &quot;D&quot;, direction = -1, begin = .1, end = .9) +
-    scale_y_continuous(breaks = c(  seq(1901, 2016, by = by),
-      seq(2016, colnames(repl2_df)[ncol(repl2_df)], by = by) ) )  +
-    coord_cartesian(xlim = x_coord) +
-    theme_piss(theme = theme_minimal()) +
-    labs(x = expression( Max~(T~degree*C)), y = &quot;Year&quot;,
-         title = titl, subtitle = subtitl) +
-    scale_colour_manual(name = &quot;Intervals&quot;, values = col.quantiles) +
-    guides(colour = guide_legend(override.aes = list(size=4))) +
-    theme(legend.position = c(.952, .37),
-          plot.subtitle = element_text(hjust = 0.5,face = &quot;italic&quot;),
-          plot.caption = element_text(hjust = 0.1,face = &quot;italic&quot;))
+  g &lt;-<span class="st"> </span><span class="kw">ggplot</span>(repl2_df_gg, <span class="kw">aes</span>(<span class="dt">x =</span> value, <span class="dt">y =</span> <span class="kw">as.numeric</span>(year) )) <span class="op">+</span><span class="st">  </span><span class="co"># %&gt;%rev() inside aes()</span>
+<span class="st">    </span><span class="kw">geom_joy</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> year)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="st">`</span><span class="dt">2.5%</span><span class="st">`</span>, <span class="dt">y =</span> <span class="kw">as.numeric</span>(year), <span class="dt">col =</span> <span class="st">&quot;2.5%-97.5%&quot;</span>),
+               <span class="dt">data =</span> quantiles_repl2, <span class="dt">size =</span> <span class="fl">0.9</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="st">`</span><span class="dt">50%</span><span class="st">`</span>, <span class="dt">y =</span> <span class="kw">as.numeric</span>(year), <span class="dt">col =</span> <span class="st">&quot;Median&quot;</span>),
+               <span class="dt">data =</span> quantiles_repl2, <span class="dt">size =</span> <span class="fl">0.9</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="st">`</span><span class="dt">97.5%</span><span class="st">`</span>, <span class="dt">y =</span> <span class="kw">as.numeric</span>(year), <span class="dt">col =</span> <span class="st">&quot;2.5%-97.5%&quot;</span>),
+               <span class="dt">data =</span> quantiles_repl2, <span class="dt">size =</span> <span class="fl">0.9</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> lower, <span class="dt">y =</span> <span class="kw">as.numeric</span>(year) , <span class="dt">col =</span> <span class="st">&quot;HPD 95%&quot;</span>),
+               <span class="dt">data =</span> hpd_pred, <span class="dt">size =</span> <span class="fl">0.9</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x =</span> upper, <span class="dt">y =</span> <span class="kw">as.numeric</span>(year) , <span class="dt">col =</span> <span class="st">&quot;HPD 95%&quot;</span>),
+               <span class="dt">data =</span> hpd_pred, <span class="dt">size =</span> <span class="fl">0.9</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">2016</span>, <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="dt">size =</span> <span class="fl">0.3</span>, <span class="dt">col  =</span> <span class="dv">1</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">scale_fill_viridis</span>(<span class="dt">discrete =</span> T, <span class="dt">option =</span> <span class="st">&quot;D&quot;</span>, <span class="dt">direction =</span> <span class="op">-</span><span class="dv">1</span>, <span class="dt">begin =</span> .<span class="dv">1</span>, <span class="dt">end =</span> .<span class="dv">9</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">scale_y_continuous</span>(<span class="dt">breaks =</span> <span class="kw">c</span>(  <span class="kw">seq</span>(<span class="dv">1901</span>, <span class="dv">2016</span>, <span class="dt">by =</span> by),
+      <span class="kw">seq</span>(<span class="dv">2016</span>, <span class="kw">colnames</span>(repl2_df)[<span class="kw">ncol</span>(repl2_df)], <span class="dt">by =</span> by) ) )  <span class="op">+</span>
+<span class="st">    </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> x_coord) <span class="op">+</span>
+<span class="st">    </span><span class="kw">theme_piss</span>(<span class="dt">theme =</span> <span class="kw">theme_minimal</span>()) <span class="op">+</span>
+<span class="st">    </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="kw">expression</span>( Max<span class="op">~</span>(T<span class="op">~</span>degree<span class="op">*</span>C)), <span class="dt">y =</span> <span class="st">&quot;Year&quot;</span>,
+         <span class="dt">title =</span> titl, <span class="dt">subtitle =</span> subtitl) <span class="op">+</span>
+<span class="st">    </span><span class="kw">scale_colour_manual</span>(<span class="dt">name =</span> <span class="st">&quot;Intervals&quot;</span>, <span class="dt">values =</span> col.quantiles) <span class="op">+</span>
+<span class="st">    </span><span class="kw">guides</span>(<span class="dt">colour =</span> <span class="kw">guide_legend</span>(<span class="dt">override.aes =</span> <span class="kw">list</span>(<span class="dt">size=</span><span class="dv">4</span>))) <span class="op">+</span>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="kw">c</span>(.<span class="dv">952</span>, .<span class="dv">37</span>),
+          <span class="dt">plot.subtitle =</span> <span class="kw">element_text</span>(<span class="dt">hjust =</span> <span class="fl">0.5</span>,<span class="dt">face =</span> <span class="st">&quot;italic&quot;</span>),
+          <span class="dt">plot.caption =</span> <span class="kw">element_text</span>(<span class="dt">hjust =</span> <span class="fl">0.1</span>,<span class="dt">face =</span> <span class="st">&quot;italic&quot;</span>))
   g
 }
 
 
 ## All
-posterior_pred_ggplot(from = 1, x_coord = c(27, 38),
-                      n_future = nrow(max_years$df), by = 12)</code></pre>
-<p><img src="2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<span class="kw">posterior_pred_ggplot</span>(<span class="dt">from =</span> <span class="dv">1</span>, <span class="dt">x_coord =</span> <span class="kw">c</span>(<span class="dv">27</span>, <span class="dv">38</span>),
+                      <span class="dt">n_future =</span> <span class="kw">nrow</span>(max_years<span class="op">$</span>df), <span class="dt">by =</span> <span class="dv">12</span>)</code></pre></div>
+<p><img src="/post/2017-10-14-summary-bayesian_files/figure-html/unnamed-chunk-23-1.svg" width="672" /></p>
 <p>From this Figure, we also notice the linear trend and we visualize more clearly the evolution of the quantiles over time with their gap increasing after <span class="math inline">\(2016\)</span>, i.e. from their deviation to the median. This comes from the predictive density distributions that become more and more flat after <span class="math inline">\(2016\)</span>, indicating an increasing variance and hence the inclusion of the prediction uncertainty through the PPD.</p>
 <p>Interesting information can come from these PP plots when considering other models, and the shape of the predictive densities is sometimes interesting. But, the parametric models considered are rather limited, and other models need to be developed. For example, step-change models, or more flexible models by following the idea of . It would then be interesting to consider .</p>
 <p><strong>To be continued</strong> : <span class="math inline">\(\underline{\boldsymbol{\text{Further &#39;diagnostics&#39; on the posterior predictive accuracy}}} :\)</span></p>
@@ -819,7 +862,7 @@ posterior_pred_ggplot(from = 1, x_coord = c(27, 38),
 </div>
 <div id="shiny-applications" class="section level1">
 <h1>Shiny Applications</h1>
-<pre class="r"><code>knitr::include_app(&quot;https://proto4426.shinyapps.io/Bayesian_GibbsCpp/&quot;, height = &quot;900px&quot;)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knitr<span class="op">::</span><span class="kw">include_app</span>(<span class="st">&quot;https://proto4426.shinyapps.io/Bayesian_GibbsCpp/&quot;</span>, <span class="dt">height =</span> <span class="st">&quot;900px&quot;</span>)</code></pre></div>
 <iframe src="https://proto4426.shinyapps.io/Bayesian_GibbsCpp/?showcase=0" width="672" height="900px">
 </iframe>
 <p>The code is available <a href="https://github.com/proto4426/PissoortThesis/tree/master/inst/shiny-examples/Bayesian">here</a></p>

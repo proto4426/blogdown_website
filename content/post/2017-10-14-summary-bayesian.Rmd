@@ -1,7 +1,7 @@
 ---
 title: "Bayesian methods in Extreme Value Theory"
 author: "Antoine Pissoort"
-#date: "March 13, 2017"
+date: "March 13, 2017"
 slug: summary-bayesian
 categories:
   - R
@@ -14,6 +14,12 @@ tags:
   - Bayesian
   - statistics
 bibliography: sum.bib
+output:
+  blogdown::html_page:
+    fig_retina: 2
+    fig_width: 7
+    dev: svg
+    highlight: pygments
 ---
 
 ```{r setup, message=F, include=FALSE}
